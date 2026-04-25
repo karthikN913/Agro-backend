@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Agro Linken</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <header>
+        <div class="logo">🌾 Agro Linken</div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="marketplace.html">Marketplace</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1 id="welcome-msg">Welcome</h1>
+            <button id="add-product-btn" class="btn hidden" onclick="showAddProductModal()" style="width: auto;">+ Add New Product</button>
+        </div>
+
+        <h2 style="margin-bottom: 1rem;">Your Orders</h2>
+        <div class="grid" id="orders-grid">
+            <!-- Orders will be injected here -->
+        </div>
+
+        <div id="farmer-products-section" class="hidden" style="margin-top: 3rem;">
+            <h2 style="margin-bottom: 1rem;">Your Listed Products</h2>
+            <div class="grid" id="products-grid">
+                <!-- Products will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="add-product-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>Add New Product</h3>
+            <div class="form-group">
+                <label>Product Name</label>
+                <input type="text" id="prod-name" placeholder="e.g. Organic Tomatoes">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="prod-category">
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Grains">Grains</option>
+                    <option value="Dairy">Dairy</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantity (kg)</label>
+                <input type="number" id="prod-quantity" placeholder="100">
+            </div>
+            <div class="form-group">
+                <label>Price per kg (₹)</label>
+                <input type="number" id="prod-price" placeholder="45">
+            </div>
+            <button class="btn" onclick="submitProduct()">Publish Product</button>
+            <button class="btn btn-secondary" onclick="hideAddProductModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="scripts/api.js"></script>
+    <script>
+        const user = requireAuth();
+
+        document.getElementById('welcome-msg').innerText = `Welcome, ${user.name}`;
+
+        if (user.role === 'FARMER') {
+            document.getElementById('add-product-btn').classList.remove('hidden');
+            document.getElementById('farmer-products-section').classList.remove('hidden');
+            loadFarmerProducts();
+        }
+
+        loadOrders();
+
+        function showAddProductModal() { document.getElementById('add-product-modal').classList.remove('hidden'); }
+        function hideAddProductModal() { document.getElementById('add-product-modal').classList.add('hidden'); }
+
+        async function submitProduct() {
+            try {
+                const productData = {
+                    name: document.getElementById('prod-name').value,
+                    category: document.getElementById('prod-category').value,
+                    quantity: parseInt(document.getElementById('prod-quantity').value),
+                    price: parseFloat(document.getElementById('prod-price').value),
+                    farmer: { id: user.id }
+                };
+                await api.addProduct(productData);
+                alert('Product added successfully!');
+                hideAddProductModal();
+                loadFarmerProducts();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function loadFarmerProducts() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/products/farmer/${user.id}`);
+                const products = await res.json();
+                const grid = document.getElementById('products-grid');
+                grid.innerHTML = products.map(p => `
+                    <div class="card">
+                        <div class="card-img">📦</div>
+                        <div class="card-body">
+                            <span class="tag">${p.category}</span>
+                            <h3 class="card-title" style="margin-top: 0.5rem;">${p.name}</h3>
+                            <div class="card-price">₹${p.price} <span style="font-size:0.9rem;color:#666">/ kg</span></div>
+                            <div class="card-meta"><span>Available: ${p.quantity}kg</span></div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadOrders() {
+            try {
+                const orders = await api.getOrders(user.id, user.role);
+                const grid = document.getElementById('orders-grid');
+                if(orders.length === 0) {
+                    grid.innerHTML = "<p>No orders found.</p>";
+                    return;
+                }
+                grid.innerHTML = orders.map(o => `
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Order #${o.id}</h3>
+                            <p><strong>Product:</strong> ${o.product.name}</p>
+                            <p><strong>Qty:</strong> ${o.quantity}kg</p>
+                            <div class="card-price" style="font-size: 1.2rem;">Total: ₹${o.totalPrice}</div>
+                            <span class="tag" style="background-color: ${o.status === 'DELIVERED' ? 'var(--primary-color)' : (o.status === 'PENDING' ? '#e67e22' : '#3498db')}">${o.status}</span>
+                            
+                            ${user.role === 'FARMER' && o.status !== 'DELIVERED' ? `
+                                <div style="margin-top: 1rem;">
+                                    <select id="status-${o.id}" style="width:100%; padding: 0.5rem; border-radius:4px; margin-bottom: 0.5rem;">
+                                        <option value="ACCEPTED" ${o.status==='ACCEPTED'?'selected':''}>Accept</option>
+                                        <option value="SHIPPED" ${o.status==='SHIPPED'?'selected':''}>Ship</option>
+                                        <option value="DELIVERED" ${o.status==='DELIVERED'?'selected':''}>Deliver</option>
+                                    </select>
+                                    <button class="btn" style="padding: 0.5rem;" onclick="updateOrder(${o.id})">Update Status</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function updateOrder(id) {
+            try {
+                const status = document.getElementById(`status-${id}`).value;
+                await api.updateOrderStatus(id, status);
+                alert("Order updated!");
+                loadOrders();
+            } catch (e) { alert(e.message); }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agro Linken - Welcome</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="logo">🌾 Agro Linken</div>
+    </header>
+
+    <div class="container">
+        <div class="auth-container" id="login-form">
+            <h2>Login to your account</h2>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="login-email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password">
+            </div>
+            <button class="btn" onclick="handleLogin()">Login with Email</button>
+            <div style="margin-top: 1rem; text-align: center;">
+                <button class="btn" style="background-color: #db4437; color: white;" onclick="handleGoogleLogin()">Sign
+                    in with Google</button>
+            </div>
+            <p style="text-align: center; margin-top: 1rem;">
+                Don't have an account? <a href="#" onclick="toggleAuth()">Register here</a>
+            </p>
+        </div>
+
+        <div class="auth-container hidden" id="register-form">
+            <h2>Create an account</h2>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="reg-name" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="reg-email" placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="reg-password">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select id="reg-role" onchange="toggleShopName()">
+                    <option value="FARMER">Farmer</option>
+                    <option value="BUYER">Buyer / Shop Owner</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Location / Village</label>
+                <input type="text" id="reg-location">
+            </div>
+            <div class="form-group hidden" id="shop-name-group">
+                <label>Shop Name</label>
+                <input type="text" id="reg-shop-name">
+            </div>
+            <button class="btn" onclick="handleRegister()">Register with Email</button>
+            <div style="margin-top: 1rem; text-align: center;">
+                <button class="btn" style="background-color: #db4437; color: white;"
+                    onclick="handleGoogleRegister()">Register with Google</button>
+            </div>
+            <p style="text-align: center; margin-top: 1rem;">
+                Already have an account? <a href="#" onclick="toggleAuth()">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            // TODO: Replace these with your actual Firebase config
+            apiKey: "AIzaSyAnsWq6UaHQQc-603IW2jD0hSrFZnpupfE",
+            authDomain: "agro-linken.firebaseapp.com",
+            projectId: "agro-linken",
+            storageBucket: "agro-linken.firebasestorage.app",
+            messagingSenderId: "610365989044",
+            appId: "1:610365989044:web:daad77a68f78e852e777e1",
+            measurementId: "G-EZT1TN39PL"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <script src="scripts/api.js"></script>
+    <script>
+        if (getCurrentUser()) {
+            window.location.href = 'dashboard.html';
+        }
+
+        function toggleAuth() {
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('register-form').classList.toggle('hidden');
+        }
+
+        function toggleShopName() {
+            const role = document.getElementById('reg-role').value;
+            const shopGroup = document.getElementById('shop-name-group');
+            if (role === 'BUYER') {
+                shopGroup.classList.remove('hidden');
+            } else {
+                shopGroup.classList.add('hidden');
+            }
+        }
+
+        async function handleGoogleLogin() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const userCredential = await firebase.auth().signInWithPopup(provider);
+                const token = await userCredential.user.getIdToken();
+
+                const user = await api.login(token);
+
+                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('token', token);
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                if (err.message.includes("404")) {
+                    alert("Account not found. Please register first.");
+                    await firebase.auth().signOut();
+                } else {
+                    alert("Google Login failed: " + err.message);
+                }
+            }
+        }
+
+        async function handleLogin() {
+            try {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                // 1. Login with Firebase
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                const token = await userCredential.user.getIdToken();
+
+                // 2. Call backend login to sync/verify
+                const user = await api.login(token);
+
+                // 3. Save details
+                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('token', token);
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                alert("Login failed: " + err.message);
+            }
+        }
+
+        async function handleGoogleRegister() {
+            try {
+                const role = document.getElementById('reg-role').value;
+                const location = document.getElementById('reg-location').value;
+                if (!location) {
+                    alert("Please provide your location before registering with Google.");
+                    return;
+                }
+
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const userCredential = await firebase.auth().signInWithPopup(provider);
+                const token = await userCredential.user.getIdToken();
+
+                const data = {
+                    name: userCredential.user.displayName || "Google User",
+                    phone: "N/A",
+                    role: role,
+                    location: location,
+                    shopName: role === 'BUYER' ? document.getElementById('reg-shop-name').value : null
+                };
+
+                await api.register(data, token);
+                alert("Registration successful! Please login.");
+
+                await firebase.auth().signOut();
+                toggleAuth();
+            } catch (err) {
+                alert("Google Registration failed: " + err.message);
+            }
+        }
+
+        async function handleRegister() {
+            try {
+                const role = document.getElementById('reg-role').value;
+                const email = document.getElementById('reg-email').value;
+                const password = document.getElementById('reg-password').value;
+
+                // 1. Create user in Firebase
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                const token = await userCredential.user.getIdToken();
+
+                // 2. Send details to backend
+                const data = {
+                    name: document.getElementById('reg-name').value,
+                    phone: "N/A", // optional now, could add another field if needed
+                    role: role,
+                    location: document.getElementById('reg-location').value,
+                    shopName: role === 'BUYER' ? document.getElementById('reg-shop-name').value : null
+                };
+
+                await api.register(data, token);
+                alert("Registration successful! Please login.");
+
+                // Sign out of Firebase so they can properly login
+                await firebase.auth().signOut();
+                toggleAuth();
+            } catch (err) {
+                alert("Registration failed: " + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
