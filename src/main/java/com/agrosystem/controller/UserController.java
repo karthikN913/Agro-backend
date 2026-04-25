@@ -26,51 +26,9 @@ public class UserController {
         return FirebaseAuth.getInstance().verifyIdToken(token);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestHeader("Authorization") String authHeader, @RequestBody User user) {
-        try {
-            FirebaseToken decodedToken = verifyToken(authHeader);
-            String uid = decodedToken.getUid();
-            String email = decodedToken.getEmail();
-            
-            if (userRepository.findByFirebaseUid(uid).isPresent()) {
-                return ResponseEntity.badRequest().body("User already registered.");
-            }
-            
-            user.setFirebaseUid(uid);
-            user.setEmail(email);
-            
-            User savedUser = userRepository.save(user);
-            return ResponseEntity.ok(savedUser);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: " + e.getMessage());
-        }
-    }
-
   @PostMapping("/firebase-login")
 public ResponseEntity<?> firebaseLogin(@RequestBody Map<String, String> body) {
-    try {
-        String token = body.get("token");
-
-        // Verify Firebase token
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-
-        String email = decodedToken.getEmail();
-
-        // Check if user exists in DB
-        User user = userRepository.findByEmail(email);
-
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User not registered. Please register first.");
-        }
-
-        return ResponseEntity.ok(user);
-
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body("Invalid Firebase token");
-    }
+    return ResponseEntity.ok("TEST WORKING");
 }
 
     @GetMapping("/{id}")
