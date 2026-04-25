@@ -7,7 +7,7 @@ function getAuthHeaders(token = null) {
         headers['Authorization'] = `Bearer ${authToken}`;
     }
     return headers;
-}
+} 
 
 const api = {
     async register(userData, token) {
