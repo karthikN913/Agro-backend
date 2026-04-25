@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 
 // IMPORTANT: Render provides PORT automatically
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 // Middleware (optional but useful)
 app.use(express.json());
