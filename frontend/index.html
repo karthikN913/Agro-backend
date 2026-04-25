@@ -143,7 +143,10 @@
                 const token = await userCredential.user.getIdToken();
 
                 // 2. Call backend login to sync/verify
-                const user = await api.login(token);
+               const user = {
+  name: userCredential.user.email,
+  role: "USER"
+};
 
                 // 3. Save details
                 localStorage.setItem('user', JSON.stringify(user));
