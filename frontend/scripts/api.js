@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://agro-backend-hscn.onrender.comapi";
+const API_BASE_URL = "https://agro-backend-hscn.onrender.com/api";
 
 function getAuthHeaders(token = null) {
     const headers = { 'Content-Type': 'application/json' };
