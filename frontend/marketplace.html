@@ -1,111 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketplace - Agro Linken</title>
-    <link rel="stylesheet" href="styles/main.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace – Agro Linken</title>
+  <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <header>
-        <div class="logo">🌾 Agro Linken</div>
-        <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="#" onclick="logout()">Logout</a>
-        </nav>
-    </header>
+  <header>
+    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <nav>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="marketplace.html" class="active">🛍️ Marketplace</a>
+      <a href="community.html">💬 Community</a>
+      <a href="schemes.html">🏛️ Schemes</a>
+      <a href="#" onclick="logout()">🚪 Logout</a>
+    </nav>
+  </header>
 
-    <div class="container">
-        <h1 style="margin-bottom: 2rem; color: var(--primary-color);">Marketplace</h1>
-        
-        <div class="grid" id="market-grid">
-            <!-- Products injected here -->
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Navigation</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="marketplace.html" class="sidebar-link active"><span class="icon">🛍️</span> Marketplace</a>
+        <a href="chat.html" class="sidebar-link"><span class="icon">💬</span> Messages</a>
+        <a href="community.html" class="sidebar-link"><span class="icon">🌐</span> Community</a>
+        <a href="schemes.html" class="sidebar-link"><span class="icon">🏛️</span> Gov. Schemes</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Filter by Category</div>
+        <a href="#" class="sidebar-link" onclick="filterCategory('all')"><span class="icon">📦</span> All Products</a>
+        <a href="#" class="sidebar-link" onclick="filterCategory('Vegetables')"><span class="icon">🥦</span> Vegetables</a>
+        <a href="#" class="sidebar-link" onclick="filterCategory('Fruits')"><span class="icon">🍎</span> Fruits</a>
+        <a href="#" class="sidebar-link" onclick="filterCategory('Grains')"><span class="icon">🌾</span> Grains</a>
+        <a href="#" class="sidebar-link" onclick="filterCategory('Dairy')"><span class="icon">🥛</span> Dairy</a>
+        <a href="#" class="sidebar-link" onclick="filterCategory('Spices')"><span class="icon">🌶️</span> Spices</a>
+        <a href="#" class="sidebar-link" onclick="filterCategory('Pulses')"><span class="icon">🫘</span> Pulses</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>🛍️ Marketplace</h1>
+          <p>Fresh produce directly from farmers across India</p>
         </div>
-    </div>
+        <div style="display:flex;gap:0.75rem;align-items:center;">
+          <input type="search" id="search-input" placeholder="🔍  Search products..." oninput="searchProducts()"
+            style="padding:0.65rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:Inter,sans-serif;outline:none;width:240px;transition:all 0.2s;">
+        </div>
+      </div>
 
-    <!-- Purchase Modal -->
-    <div id="purchase-modal" class="modal-overlay hidden">
-        <div class="modal">
-            <h3 id="modal-title">Buy Product</h3>
-            <p id="modal-desc" style="margin-bottom: 1rem;"></p>
-            <div class="form-group">
-                <label>Quantity to Buy (kg)</label>
-                <input type="number" id="buy-quantity" placeholder="10">
+      <div class="grid" id="market-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);">Loading marketplace...</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Purchase Modal -->
+  <div id="purchase-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Buy Product</h3>
+        <button class="modal-close" onclick="hidePurchaseModal()">✕</button>
+      </div>
+      <p id="modal-desc" style="color:var(--text-muted);margin-bottom:1.5rem;font-size:0.9rem;"></p>
+      <div class="form-group">
+        <label>Quantity to Buy (kg)</label>
+        <input type="number" id="buy-quantity" placeholder="Enter quantity">
+      </div>
+      <div id="total-preview" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.25rem;display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--text-muted);font-size:0.9rem;">Total Amount</span>
+          <span id="total-amount" style="font-size:1.3rem;font-weight:800;color:var(--green-primary);"></span>
+        </div>
+      </div>
+      <button class="btn" onclick="confirmPurchase()">🛒 Place Order</button>
+      <button class="btn btn-secondary" onclick="hidePurchaseModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="scripts/api.js"></script>
+  <script>
+    const user = requireAuth();
+    let allProducts = [];
+    let currentProduct = null;
+
+    loadMarketplace();
+
+    function showToast(msg, type = 'success') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    }
+
+    async function loadMarketplace() {
+      try {
+        allProducts = await api.getAllProducts();
+        renderProducts(allProducts);
+      } catch(e) { console.error(e); }
+    }
+
+    function getCategoryEmoji(cat) {
+      const map = { Vegetables:'🥦', Fruits:'🍎', Grains:'🌾', Dairy:'🥛', Spices:'🌶️', Pulses:'🫘' };
+      return map[cat] || '📦';
+    }
+
+    function renderProducts(products) {
+      const grid = document.getElementById('market-grid');
+      if (products.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);">No products found.</div>';
+        return;
+      }
+      grid.innerHTML = products.map(p => `
+        <div class="card">
+          <div class="card-img">${getCategoryEmoji(p.category)}</div>
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <span class="tag tag-green">${p.category}</span>
+              ${p.quantity === 0 ? '<span class="tag tag-red">Out of Stock</span>' : ''}
             </div>
-            <button class="btn" onclick="confirmPurchase()">Place Order</button>
-            <button class="btn btn-secondary" onclick="hidePurchaseModal()">Cancel</button>
+            <h3 class="card-title">${p.name}</h3>
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.5rem;">
+              🧑‍🌾 ${p.farmer.name} &nbsp;·&nbsp; 📍 ${p.farmer.location}
+            </p>
+            <div class="card-price">₹${p.price} <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted);">/ kg</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+              <span style="font-size:0.85rem;color:var(--text-muted);">Stock: ${p.quantity} kg</span>
+            </div>
+            ${user.role !== 'FARMER' ? `
+              <button class="btn" style="width:100%;" onclick='openPurchaseModal(${JSON.stringify(p).replace(/'/g,"\\'")})'
+                ${p.quantity === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                ${p.quantity === 0 ? '❌ Out of Stock' : '🛒 Buy Now'}
+              </button>` : '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Your product</p>'}
+          </div>
         </div>
-    </div>
+      `).join('');
+    }
 
-    <script src="scripts/api.js"></script>
-    <script>
-        const user = requireAuth();
-        let currentProduct = null;
+    function filterCategory(cat) {
+      if (cat === 'all') renderProducts(allProducts);
+      else renderProducts(allProducts.filter(p => p.category === cat));
+    }
 
+    function searchProducts() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      renderProducts(allProducts.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.farmer.name.toLowerCase().includes(q)));
+    }
+
+    function openPurchaseModal(product) {
+      currentProduct = product;
+      document.getElementById('modal-title').textContent = `Buy ${product.name}`;
+      document.getElementById('modal-desc').textContent = `Sold by ${product.farmer.name} from ${product.farmer.location}. Price: ₹${product.price}/kg. Available: ${product.quantity}kg.`;
+      document.getElementById('purchase-modal').classList.remove('hidden');
+      document.getElementById('buy-quantity').oninput = function() {
+        const qty = parseInt(this.value);
+        const totalDiv = document.getElementById('total-preview');
+        if (qty > 0) {
+          totalDiv.style.display = '';
+          document.getElementById('total-amount').textContent = `₹${(qty * product.price).toFixed(2)}`;
+        } else { totalDiv.style.display = 'none'; }
+      };
+    }
+
+    function hidePurchaseModal() {
+      document.getElementById('purchase-modal').classList.add('hidden');
+      document.getElementById('total-preview').style.display = 'none';
+      currentProduct = null;
+    }
+
+    async function confirmPurchase() {
+      const qty = parseInt(document.getElementById('buy-quantity').value);
+      if (!qty || qty <= 0 || qty > currentProduct.quantity) { showToast('Invalid quantity.', 'error'); return; }
+      try {
+        await api.placeOrder({ buyer: { id: user.id }, product: { id: currentProduct.id }, quantity: qty });
+        showToast(`Order placed! ${qty}kg of ${currentProduct.name}.`);
+        hidePurchaseModal();
         loadMarketplace();
-
-        async function loadMarketplace() {
-            try {
-                const products = await api.getAllProducts();
-                const grid = document.getElementById('market-grid');
-                grid.innerHTML = products.map(p => `
-                    <div class="card">
-                        <div class="card-img" style="background-color: var(--secondary-color); color: white;">🚜</div>
-                        <div class="card-body">
-                            <span class="tag">${p.category}</span>
-                            <h3 class="card-title" style="margin-top: 0.5rem;">${p.name}</h3>
-                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
-                                Sold by: ${p.farmer.name} (${p.farmer.location})
-                            </p>
-                            <div class="card-price">₹${p.price} <span style="font-size:0.9rem;color:#666">/ kg</span></div>
-                            <div class="card-meta"><span>Available: ${p.quantity}kg</span></div>
-                            
-                            ${user.role === 'BUYER' ? `
-                                <button class="btn" style="width:100%; margin-top: 1rem;" 
-                                    onclick='openPurchaseModal(${JSON.stringify(p).replace(/'/g, "&apos;")})'
-                                    ${p.quantity === 0 ? 'disabled' : ''}>
-                                    ${p.quantity === 0 ? 'Out of Stock' : 'Buy Now'}
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            } catch(e) { console.error(e); }
-        }
-
-        function openPurchaseModal(product) {
-            currentProduct = product;
-            document.getElementById('modal-title').innerText = `Buy ${product.name}`;
-            document.getElementById('modal-desc').innerText = `Price: ₹${product.price}/kg. Available: ${product.quantity}kg`;
-            document.getElementById('purchase-modal').classList.remove('hidden');
-        }
-
-        function hidePurchaseModal() {
-            document.getElementById('purchase-modal').classList.add('hidden');
-            currentProduct = null;
-        }
-
-        async function confirmPurchase() {
-            const qty = parseInt(document.getElementById('buy-quantity').value);
-            if (!qty || qty <= 0 || qty > currentProduct.quantity) {
-                alert('Invalid quantity');
-                return;
-            }
-
-            try {
-                const orderData = {
-                    buyer: { id: user.id },
-                    product: { id: currentProduct.id },
-                    quantity: qty
-                };
-                await api.placeOrder(orderData);
-                alert('Order placed successfully!');
-                hidePurchaseModal();
-                loadMarketplace();
-            } catch(err) {
-                alert(err.message);
-            }
-        }
-    </script>
+      } catch(err) { showToast(err.message, 'error'); }
+    }
+  </script>
 </body>
 </html>

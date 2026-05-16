@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Government Schemes – Agro Linken</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <nav>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="marketplace.html">🛍️ Marketplace</a>
+      <a href="community.html">💬 Community</a>
+      <a href="schemes.html" class="active">🏛️ Schemes</a>
+      <a href="#" onclick="logout()">🚪 Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Navigation</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="marketplace.html" class="sidebar-link"><span class="icon">🛍️</span> Marketplace</a>
+        <a href="chat.html" class="sidebar-link"><span class="icon">💬</span> Messages</a>
+        <a href="community.html" class="sidebar-link"><span class="icon">🌐</span> Community</a>
+        <a href="schemes.html" class="sidebar-link active"><span class="icon">🏛️</span> Gov. Schemes</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>🏛️ Government Schemes & Subsidies</h1>
+          <p>Official agricultural schemes and financial support programs for Indian farmers</p>
+        </div>
+      </div>
+
+      <!-- Hero Banner -->
+      <div style="background:linear-gradient(135deg,#0a1f0a,#0d2d0d);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:2rem;display:flex;align-items:center;gap:2rem;">
+        <div style="font-size:3.5rem;">🇮🇳</div>
+        <div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;">Stay Updated on Agricultural Schemes</h2>
+          <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.6;">The Indian government offers numerous financial support programs for farmers. Check your eligibility and apply directly through official portals.</p>
+        </div>
+      </div>
+
+      <div id="schemes-list"></div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+  <script src="scripts/api.js"></script>
+  <script>
+    const user = requireAuth();
+
+    // Static schemes as fallback (real data comes from DB via admin)
+    const staticSchemes = [
+      { icon:'💰', title:'PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)', description:'Direct income support of ₹6,000 per year (in 3 instalments of ₹2,000 each) to small and marginal farmers across India.', eligibility:'Landholding farmers with up to 2 hectares of agricultural land.', url:'https://pmkisan.gov.in/' },
+      { icon:'🌱', title:'PM Fasal Bima Yojana (Crop Insurance)', description:'Provides financial support to farmers suffering crop loss due to unforeseen events like drought, floods, or pest attacks. Premiums are as low as 1.5% for Rabi crops.', eligibility:'All farmers growing notified crops in notified areas.', url:'https://pmfby.gov.in/' },
+      { icon:'💧', title:'PM Krishi Sinchai Yojana (Irrigation)', description:'Aims to expand cultivable area under assured irrigation, improve on-farm water use efficiency, and introduce sustainable water conservation practices. Covers drip and sprinkler irrigation subsidies.', eligibility:'Farmers in notified districts; priority to small and marginal farmers.', url:'https://pmksy.gov.in/' },
+      { icon:'🏦', title:'Kisan Credit Card (KCC)', description:'Provides flexible credit for agricultural and allied activities at concessional interest rates (7% per annum with timely repayment incentive to 4%). Covers short-term credit needs.', eligibility:'Farmers, sharecroppers, tenant farmers, and oral lessees.', url:'https://www.nabard.org/content.aspx?id=593' },
+      { icon:'🌾', title:'National Agriculture Market (eNAM)', description:'An online trading platform for agricultural commodities that connects farmers directly to buyers, eliminating middlemen and helping farmers get fair prices for their produce.', eligibility:'All registered farmers with produce to sell at connected mandis.', url:'https://www.enam.gov.in/' },
+      { icon:'🚜', title:'Sub-Mission on Agricultural Mechanization (SMAM)', description:'Provides subsidies of up to 50% on farm machinery and equipment purchase including tractors, harvesters, seed drills, and more to reduce labour costs and improve efficiency.', eligibility:'Small and marginal farmers; SC/ST farmers get higher subsidies.', url:'https://agrimachinery.nic.in/' },
+      { icon:'🌿', title:'Paramparagat Krishi Vikas Yojana (Organic Farming)', description:'Promotes organic farming through cluster-based approach, offering financial assistance of ₹50,000 per hectare over 3 years for conversion to organic, certification, and marketing.', eligibility:'Farmers willing to adopt organic farming practices in group clusters.', url:'https://pgsindia-ncof.gov.in/' },
+      { icon:'📱', title:'Soil Health Card Scheme', description:'Provides soil health cards to farmers with information on soil nutrient status, recommending appropriate dosage of nutrients to improve crop productivity and reduce input costs.', eligibility:'All farmers across India. Cards are issued every 2 years.', url:'https://soilhealth.dac.gov.in/' }
+    ];
+
+    async function loadSchemes() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/schemes`);
+        const schemes = res.ok ? await res.json() : [];
+        if (schemes.length > 0) renderSchemes(schemes);
+        else renderSchemes(staticSchemes);
+      } catch(e) {
+        renderSchemes(staticSchemes);
+      }
+    }
+
+    function renderSchemes(schemes) {
+      const list = document.getElementById('schemes-list');
+      list.innerHTML = schemes.map(s => `
+        <div class="scheme-card">
+          <div class="scheme-icon">${s.icon || '🏛️'}</div>
+          <div class="scheme-content">
+            <div class="scheme-title">${s.title}</div>
+            <div class="scheme-desc">${s.description}</div>
+            ${s.eligibility ? `<div style="margin-bottom:0.75rem;font-size:0.85rem;"><span style="color:var(--green-primary);font-weight:600;">✅ Eligibility: </span><span style="color:var(--text-muted);">${s.eligibility}</span></div>` : ''}
+            ${s.url ? `<a href="${s.url}" target="_blank" rel="noopener" class="scheme-link">Apply / Learn More →</a>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    loadSchemes();
+  </script>
+</body>
+</html>

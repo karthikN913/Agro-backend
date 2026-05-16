@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages – Agro Linken</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <nav>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="marketplace.html">🛍️ Marketplace</a>
+      <a href="community.html">💬 Community</a>
+      <a href="schemes.html">🏛️ Schemes</a>
+      <a href="#" onclick="logout()">🚪 Logout</a>
+    </nav>
+  </header>
+
+  <div class="chat-layout">
+    <!-- Chat Sidebar -->
+    <div class="chat-sidebar">
+      <div class="chat-sidebar-header">💬 Messages</div>
+      <div style="padding:0.75rem;border-bottom:1px solid var(--border);">
+        <input type="search" id="user-search" placeholder="🔍  Search users..." oninput="searchUsers()"
+          style="width:100%;padding:0.6rem 1rem;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:Inter,sans-serif;outline:none;">
+      </div>
+      <div class="chat-list" id="chat-list">
+        <div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.9rem;">Loading users...</div>
+      </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-window" id="chat-window">
+      <!-- Empty State -->
+      <div id="chat-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);">
+        <div style="font-size:4rem;margin-bottom:1rem;">💬</div>
+        <h3 style="font-size:1.1rem;margin-bottom:0.5rem;color:var(--text-secondary);">Select a conversation</h3>
+        <p style="font-size:0.9rem;">Choose a farmer or buyer from the left to start chatting</p>
+      </div>
+
+      <!-- Active Chat (hidden by default) -->
+      <div id="active-chat" style="display:none;flex-direction:column;height:100%;">
+        <div class="chat-window-header">
+          <div class="chat-avatar" id="chat-peer-avatar">?</div>
+          <div>
+            <div style="font-weight:700;" id="chat-peer-name">–</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);" id="chat-peer-role">–</div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-area">
+          <textarea class="chat-input" id="chat-input-field" placeholder="Type a message..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+          <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/api.js"></script>
+  <!-- SockJS + STOMP for WebSocket -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+  <script>
+    const user = requireAuth();
+    let stompClient = null;
+    let currentPeer = null;
+    let allUsers = [];
+
+    connectWebSocket();
+    loadUsers();
+
+    function connectWebSocket() {
+      const socket = new SockJS(`${API_BASE_URL.replace('/api', '')}/ws-chat`);
+      stompClient = Stomp.over(socket);
+      stompClient.debug = null; // suppress logs
+      stompClient.connect({}, function() {
+        stompClient.subscribe('/topic/public', function(msg) {
+          const message = JSON.parse(msg.body);
+          if (currentPeer && (message.sender?.id == currentPeer.id || message.receiver?.id == currentPeer.id)) {
+            appendMessage(message, false);
+          }
+        });
+      }, function(err) { console.warn('WebSocket connection failed:', err); });
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/users`);
+        if (!res.ok) throw new Error('Could not load users');
+        allUsers = (await res.json()).filter(u => u.id !== user.id);
+        renderUserList(allUsers);
+      } catch(e) {
+        document.getElementById('chat-list').innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem;">Connect with farmers and buyers by visiting the marketplace.</div>';
+      }
+    }
+
+    function renderUserList(users) {
+      const list = document.getElementById('chat-list');
+      if (users.length === 0) { list.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-muted);">No other users found.</div>'; return; }
+      const roleMap = { FARMER: '🌾 Farmer', BUYER: '🛒 Buyer', SHOP_OWNER: '🏪 Shop Owner', TRANSPORTER: '🚚 Transporter', ADMIN: '🛡️ Admin' };
+      list.innerHTML = users.map(u => `
+        <div class="chat-item ${currentPeer?.id === u.id ? 'active' : ''}" onclick="openChat(${JSON.stringify(u).replace(/"/g,'&quot;')})">
+          <div class="chat-avatar">${(u.name || 'U')[0].toUpperCase()}</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">${u.name || 'Unknown'}</div>
+            <div class="chat-item-preview">${roleMap[u.role] || u.role} · ${u.location || ''}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function searchUsers() {
+      const q = document.getElementById('user-search').value.toLowerCase();
+      renderUserList(allUsers.filter(u => (u.name || '').toLowerCase().includes(q) || (u.location || '').toLowerCase().includes(q)));
+    }
+
+    async function openChat(peer) {
+      currentPeer = peer;
+      const roleMap = { FARMER: '🌾 Farmer', BUYER: '🛒 Buyer', SHOP_OWNER: '🏪 Shop Owner', TRANSPORTER: '🚚 Transporter' };
+      document.getElementById('chat-peer-avatar').textContent = (peer.name || 'U')[0].toUpperCase();
+      document.getElementById('chat-peer-name').textContent = peer.name || 'Unknown';
+      document.getElementById('chat-peer-role').textContent = `${roleMap[peer.role] || peer.role} · ${peer.location || ''}`;
+      document.getElementById('chat-empty-state').style.display = 'none';
+      const activeChat = document.getElementById('active-chat');
+      activeChat.style.display = 'flex';
+      renderUserList(allUsers); // refresh active highlight
+
+      // Load chat history
+      try {
+        const res = await fetch(`${API_BASE_URL}/messages/${user.id}/${peer.id}`);
+        const messages = await res.json();
+        const msgContainer = document.getElementById('chat-messages');
+        msgContainer.innerHTML = '';
+        messages.forEach(m => appendMessage(m, false));
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+      } catch(e) { console.error(e); }
+    }
+
+    function appendMessage(msg, scroll = true) {
+      const isSent = msg.sender?.id == user.id || msg.sender == user.id;
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:${isSent ? 'flex-end' : 'flex-start'};">
+          <div class="message-bubble ${isSent ? 'sent' : 'received'}">${escapeHtml(msg.content)}</div>
+          <div class="message-time">${formatTime(msg.timestamp)}</div>
+        </div>`;
+      container.appendChild(div);
+      if (scroll) container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chat-input-field');
+      const content = input.value.trim();
+      if (!content || !currentPeer || !stompClient?.connected) return;
+      const message = {
+        sender: { id: user.id },
+        receiver: { id: currentPeer.id },
+        content: content,
+        timestamp: new Date().toISOString()
+      };
+      stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(message));
+      appendMessage({ ...message, sender: user });
+      input.value = '';
+    }
+
+    function escapeHtml(text) {
+      return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function formatTime(ts) {
+      if (!ts) return '';
+      try { return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch(e) { return ''; }
+    }
+  </script>
+</body>
+</html>

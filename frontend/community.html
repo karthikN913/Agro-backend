@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community – Agro Linken</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <nav>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="marketplace.html">🛍️ Marketplace</a>
+      <a href="community.html" class="active">💬 Community</a>
+      <a href="schemes.html">🏛️ Schemes</a>
+      <a href="#" onclick="logout()">🚪 Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Navigation</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="marketplace.html" class="sidebar-link"><span class="icon">🛍️</span> Marketplace</a>
+        <a href="chat.html" class="sidebar-link"><span class="icon">💬</span> Messages</a>
+        <a href="community.html" class="sidebar-link active"><span class="icon">🌐</span> Community</a>
+        <a href="schemes.html" class="sidebar-link"><span class="icon">🏛️</span> Gov. Schemes</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Community</div>
+        <a href="#" class="sidebar-link" onclick="document.getElementById('new-post-modal').classList.remove('hidden')"><span class="icon">✍️</span> New Post</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>🌐 Community Forum</h1>
+          <p>Share knowledge, tips, and experiences with the agricultural community</p>
+        </div>
+        <button class="btn btn-sm" style="width:auto;" onclick="document.getElementById('new-post-modal').classList.remove('hidden')">
+          ✍️ New Post
+        </button>
+      </div>
+
+      <div id="forum-feed">
+        <div style="text-align:center;padding:3rem;color:var(--text-muted);">Loading community posts...</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- New Post Modal -->
+  <div id="new-post-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>✍️ Share with the Community</h3>
+        <button class="modal-close" onclick="document.getElementById('new-post-modal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="post-title" placeholder="What's on your mind?">
+      </div>
+      <div class="form-group">
+        <label>Content</label>
+        <textarea id="post-content" rows="5" placeholder="Share your tips, ask questions, or discuss agricultural topics..."
+          style="width:100%;padding:0.75rem 1rem;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:Inter,sans-serif;resize:vertical;outline:none;"></textarea>
+      </div>
+      <button class="btn" onclick="submitPost()">🚀 Publish Post</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('new-post-modal').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="scripts/api.js"></script>
+  <script>
+    const user = requireAuth();
+
+    function showToast(msg, type = 'success') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    }
+
+    loadPosts();
+
+    async function loadPosts() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/community`);
+        const posts = res.ok ? await res.json() : [];
+        renderPosts(posts);
+      } catch(e) {
+        // Show sample posts if backend not yet wired
+        renderPosts([
+          { id:1, author:{name:'Ravi Kumar'}, title:'Best time to plant tomatoes in Karnataka', content:'I have found that planting tomatoes in October gives the best yield in our region. The soil moisture is perfect and the temperature stays between 20-25°C which is ideal for germination.', likes:24, createdAt: new Date().toISOString() },
+          { id:2, author:{name:'Meena Devi'}, title:'How to deal with aphids without pesticides?', content:'Neem oil spray has been very effective for me! Mix 2ml neem oil with 1L water and a few drops of liquid soap. Spray early morning every 3 days. It is completely organic and safe.', likes:41, createdAt: new Date(Date.now()-86400000).toISOString() },
+          { id:3, author:{name:'Suresh Patel'}, title:'Government PM-Kisan payment received! 🎉', content:'Just received my PM-Kisan installment. Fellow farmers, make sure your Aadhaar is linked to your bank account and your land records are updated. The process is now very smooth.', likes:89, createdAt: new Date(Date.now()-172800000).toISOString() }
+        ]);
+      }
+    }
+
+    function renderPosts(posts) {
+      const feed = document.getElementById('forum-feed');
+      if (posts.length === 0) {
+        feed.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);">No posts yet. Be the first to share something!</div>';
+        return;
+      }
+      feed.innerHTML = posts.map(post => `
+        <div class="forum-post" id="post-${post.id}">
+          <div class="forum-post-header">
+            <div class="chat-avatar">${(post.author?.name || 'U')[0].toUpperCase()}</div>
+            <div>
+              <div class="forum-author">${post.author?.name || 'Unknown'}</div>
+              <div class="forum-date">${formatRelativeTime(post.createdAt)}</div>
+            </div>
+          </div>
+          <div class="forum-post-title">${escapeHtml(post.title)}</div>
+          <div class="forum-post-content">${escapeHtml(post.content)}</div>
+          <div class="forum-post-footer">
+            <button class="forum-like-btn" onclick="likePost(${post.id}, this)">
+              ❤️ <span class="like-count">${post.likes || 0}</span> Likes
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function submitPost() {
+      const title = document.getElementById('post-title').value.trim();
+      const content = document.getElementById('post-content').value.trim();
+      if (!title || !content) { showToast("Please fill both title and content.", "error"); return; }
+      try {
+        const res = await fetch(`${API_BASE_URL}/community`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+          body: JSON.stringify({ author: { id: user.id }, title, content })
+        });
+        if (res.ok) {
+          showToast("Post published!");
+          document.getElementById('new-post-modal').classList.add('hidden');
+          document.getElementById('post-title').value = '';
+          document.getElementById('post-content').value = '';
+          loadPosts();
+        } else { showToast("Failed to publish post.", "error"); }
+      } catch(e) { showToast("Could not connect to server.", "error"); }
+    }
+
+    async function likePost(id, btn) {
+      btn.classList.toggle('liked');
+      const countEl = btn.querySelector('.like-count');
+      countEl.textContent = parseInt(countEl.textContent) + (btn.classList.contains('liked') ? 1 : -1);
+    }
+
+    function escapeHtml(text) {
+      return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+
+    function formatRelativeTime(ts) {
+      if (!ts) return '';
+      const diff = (Date.now() - new Date(ts).getTime()) / 1000;
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+      return `${Math.floor(diff/86400)}d ago`;
+    }
+  </script>
+</body>
+</html>
