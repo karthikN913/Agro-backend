@@ -20,7 +20,7 @@ public class User {
     private String location;
     private String shopName; // Only for BUYER
 
-    public enum Role { FARMER, BUYER }
+    public enum Role { FARMER, BUYER, SHOP_OWNER, TRANSPORTER, ADMIN }
 
     public User() {}
 
