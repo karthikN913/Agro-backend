@@ -27,10 +27,42 @@ public class UserController {
         return FirebaseAuth.getInstance().verifyIdToken(token);
     }
 
-  @PostMapping("/firebase-login")
-public ResponseEntity<?> firebaseLogin(@RequestBody Map<String, String> body) {
-    return ResponseEntity.ok("TEST WORKING");
-}
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestHeader("Authorization") String authHeader, @RequestBody User user) {
+        try {
+            FirebaseToken decodedToken = verifyToken(authHeader);
+            String uid = decodedToken.getUid();
+            String email = decodedToken.getEmail();
+            
+            if (userRepository.findByFirebaseUid(uid).isPresent()) {
+                return ResponseEntity.badRequest().body("User already registered.");
+            }
+            
+            user.setFirebaseUid(uid);
+            user.setEmail(email);
+            
+            User savedUser = userRepository.save(user);
+            return ResponseEntity.ok(savedUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestHeader("Authorization") String authHeader) {
+        try {
+            FirebaseToken decodedToken = verifyToken(authHeader);
+            String uid = decodedToken.getUid();
+            
+            Optional<User> userOpt = userRepository.findByFirebaseUid(uid);
+            if (userOpt.isPresent()) {
+                return ResponseEntity.ok(userOpt.get());
+            }
+            return ResponseEntity.status(404).body("User not found in local database.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id) {
