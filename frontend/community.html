@@ -91,16 +91,10 @@
 
     async function loadPosts() {
       try {
-        const res = await fetch(`${API_BASE_URL}/community`);
-        const posts = res.ok ? await res.json() : [];
+        const posts = await api.getPosts();
         renderPosts(posts);
       } catch(e) {
-        // Show sample posts if backend not yet wired
-        renderPosts([
-          { id:1, author:{name:'Ravi Kumar'}, title:'Best time to plant tomatoes in Karnataka', content:'I have found that planting tomatoes in October gives the best yield in our region. The soil moisture is perfect and the temperature stays between 20-25°C which is ideal for germination.', likes:24, createdAt: new Date().toISOString() },
-          { id:2, author:{name:'Meena Devi'}, title:'How to deal with aphids without pesticides?', content:'Neem oil spray has been very effective for me! Mix 2ml neem oil with 1L water and a few drops of liquid soap. Spray early morning every 3 days. It is completely organic and safe.', likes:41, createdAt: new Date(Date.now()-86400000).toISOString() },
-          { id:3, author:{name:'Suresh Patel'}, title:'Government PM-Kisan payment received! 🎉', content:'Just received my PM-Kisan installment. Fellow farmers, make sure your Aadhaar is linked to your bank account and your land records are updated. The process is now very smooth.', likes:89, createdAt: new Date(Date.now()-172800000).toISOString() }
-        ]);
+        showToast("Failed to load community feed.", "error");
       }
     }
 
@@ -135,25 +129,27 @@
       const content = document.getElementById('post-content').value.trim();
       if (!title || !content) { showToast("Please fill both title and content.", "error"); return; }
       try {
-        const res = await fetch(`${API_BASE_URL}/community`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-          body: JSON.stringify({ author: { id: user.id }, title, content })
-        });
-        if (res.ok) {
-          showToast("Post published!");
-          document.getElementById('new-post-modal').classList.add('hidden');
-          document.getElementById('post-title').value = '';
-          document.getElementById('post-content').value = '';
-          loadPosts();
-        } else { showToast("Failed to publish post.", "error"); }
-      } catch(e) { showToast("Could not connect to server.", "error"); }
+        await api.createPost({ author: { id: user.id }, title, content });
+        showToast("Post published!");
+        document.getElementById('new-post-modal').classList.add('hidden');
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
+        loadPosts();
+      } catch(e) {
+        showToast(e.message || "Failed to publish post.", "error");
+      }
     }
 
     async function likePost(id, btn) {
-      btn.classList.toggle('liked');
-      const countEl = btn.querySelector('.like-count');
-      countEl.textContent = parseInt(countEl.textContent) + (btn.classList.contains('liked') ? 1 : -1);
+      try {
+        const updatedPost = await api.likePost(id);
+        const countEl = btn.querySelector('.like-count');
+        countEl.textContent = updatedPost.likes;
+        btn.classList.add('liked');
+        showToast("Liked post!");
+      } catch(e) {
+        showToast("Failed to like post.", "error");
+      }
     }
 
     function escapeHtml(text) {

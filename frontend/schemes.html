@@ -70,10 +70,12 @@
 
     async function loadSchemes() {
       try {
-        const res = await fetch(`${API_BASE_URL}/schemes`);
-        const schemes = res.ok ? await res.json() : [];
-        if (schemes.length > 0) renderSchemes(schemes);
-        else renderSchemes(staticSchemes);
+        const schemes = await api.getSchemes();
+        if (schemes && schemes.length > 0) {
+          renderSchemes(schemes);
+        } else {
+          renderSchemes(staticSchemes);
+        }
       } catch(e) {
         renderSchemes(staticSchemes);
       }

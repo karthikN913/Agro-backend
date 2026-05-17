@@ -7,9 +7,11 @@ function getAuthHeaders(token = null) {
         headers['Authorization'] = `Bearer ${authToken}`;
     }
     return headers;
-} 
+}
 
 const api = {
+    // ── Users ─────────────────────────────────────────────────────────────────
+
     async register(userData, token) {
         const res = await fetch(`${API_BASE_URL}/users/register`, {
             method: 'POST',
@@ -29,10 +31,16 @@ const api = {
         return res.json();
     },
 
+    async getAllUsers() {
+        const res = await fetch(`${API_BASE_URL}/users`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    // ── Products ──────────────────────────────────────────────────────────────
+
     async getAllProducts() {
-        const res = await fetch(`${API_BASE_URL}/products`, {
-            headers: getAuthHeaders()
-        });
+        const res = await fetch(`${API_BASE_URL}/products`, { headers: getAuthHeaders() });
         return res.json();
     },
 
@@ -46,6 +54,8 @@ const api = {
         return res.json();
     },
 
+    // ── Orders ────────────────────────────────────────────────────────────────
+
     async placeOrder(orderData) {
         const res = await fetch(`${API_BASE_URL}/orders`, {
             method: 'POST',
@@ -58,9 +68,7 @@ const api = {
 
     async getOrders(userId, role) {
         const endpoint = role === 'FARMER' ? `/orders/farmer/${userId}` : `/orders/buyer/${userId}`;
-        const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-            headers: getAuthHeaders()
-        });
+        const res = await fetch(`${API_BASE_URL}${endpoint}`, { headers: getAuthHeaders() });
         return res.json();
     },
 
@@ -72,10 +80,78 @@ const api = {
         });
         if (!res.ok) throw new Error(await res.text());
         return res.json();
+    },
+
+    // ── Community Posts ───────────────────────────────────────────────────────
+
+    async getPosts() {
+        const res = await fetch(`${API_BASE_URL}/community`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    async createPost(postData) {
+        const res = await fetch(`${API_BASE_URL}/community`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(postData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    async likePost(postId) {
+        const res = await fetch(`${API_BASE_URL}/community/${postId}/like`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    // ── Government Schemes ────────────────────────────────────────────────────
+
+    async getSchemes() {
+        const res = await fetch(`${API_BASE_URL}/schemes`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    // ── Reviews ───────────────────────────────────────────────────────────────
+
+    async getProductReviews(productId) {
+        const res = await fetch(`${API_BASE_URL}/reviews/product/${productId}`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    async getReviewSummary(productId) {
+        const res = await fetch(`${API_BASE_URL}/reviews/product/${productId}/summary`, { headers: getAuthHeaders() });
+        if (!res.ok) return { count: 0, average: 0 };
+        return res.json();
+    },
+
+    async submitReview(reviewData) {
+        const res = await fetch(`${API_BASE_URL}/reviews`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(reviewData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    // ── Messages ──────────────────────────────────────────────────────────────
+
+    async getMessages(userId1, userId2) {
+        const res = await fetch(`${API_BASE_URL}/messages/${userId1}/${userId2}`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
     }
 };
 
-// Auth Utilities
+// ─── Auth Utilities ───────────────────────────────────────────────────────────
+
 function getCurrentUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;

@@ -8,7 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
- 
+
+import java.util.List;
 import java.util.Optional;
 import java.util.Map;
 
@@ -62,6 +63,12 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: " + e.getMessage());
         }
+    }
+
+    /** GET /api/users — all registered users (used by chat user list) */
+    @GetMapping
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     @GetMapping("/{id}")
