@@ -24,7 +24,7 @@ public class CreditController {
     /** GET /api/credit?userId=... — list all credit book records for a shop owner/farmer */
     @GetMapping
     public List<CreditRecord> getLedger(@RequestParam Long userId) {
-        return creditRecordRepository.findByCreditorIdOrderByCreatedAtDesc(userId);
+        return creditRecordRepository.findByCreditor_IdOrderByCreatedAtDesc(userId);
     }
 
     /** POST /api/credit — record a new credit or payback transaction */
@@ -53,7 +53,7 @@ public class CreditController {
     /** GET /api/credit/summary?userId=... — get outstanding debt summary and customer balances */
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getSummary(@RequestParam Long userId) {
-        List<CreditRecord> records = creditRecordRepository.findByCreditorIdOrderByCreatedAtDesc(userId);
+        List<CreditRecord> records = creditRecordRepository.findByCreditor_IdOrderByCreatedAtDesc(userId);
 
         double totalOutstanding = 0.0;
         double totalSettled = 0.0;

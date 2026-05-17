@@ -25,7 +25,7 @@ public class SubscriptionController {
     /** GET /api/subscriptions?userId=... — list active crop subscriptions */
     @GetMapping
     public List<CropSubscription> getSubscriptions(@RequestParam Long userId) {
-        return cropSubscriptionRepository.findByUserId(userId);
+        return cropSubscriptionRepository.findByUser_Id(userId);
     }
 
     /** POST /api/subscriptions — subscribe to a crop category (idempotent) */
@@ -45,7 +45,7 @@ public class SubscriptionController {
         sub.setUser(user);
 
         // Prevent duplicates
-        boolean exists = cropSubscriptionRepository.existsByUserIdAndCategory(user.getId(), sub.getCategory());
+        boolean exists = cropSubscriptionRepository.existsByUser_IdAndCategory(user.getId(), sub.getCategory());
         if (exists) {
             // Already subscribed, return OK
             return ResponseEntity.ok(sub);
@@ -58,7 +58,7 @@ public class SubscriptionController {
     @DeleteMapping
     @Transactional
     public ResponseEntity<Void> unsubscribe(@RequestParam Long userId, @RequestParam String category) {
-        cropSubscriptionRepository.deleteByUserIdAndCategory(userId, category);
+        cropSubscriptionRepository.deleteByUser_IdAndCategory(userId, category);
         return ResponseEntity.ok().build();
     }
 }
