@@ -37,6 +37,20 @@ public class ProductController {
         return productRepository.findAll();
     }
 
+    @GetMapping("/debug")
+    public ResponseEntity<?> debugDatabase() {
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        try {
+            long userCount = userRepository.count();
+            long productCount = productRepository.count();
+            return ResponseEntity.ok("DB Connection OK! Users count: " + userCount + ", Products count: " + productCount);
+        } catch (Throwable t) {
+            t.printStackTrace(pw);
+            return ResponseEntity.status(500).body("DB Query Failed: " + t.getMessage() + "\n\nStacktrace:\n" + sw.toString());
+        }
+    }
+
     @GetMapping("/farmer/{farmerId}")
     public List<Product> getProductsByFarmer(@PathVariable Long farmerId) {
         return productRepository.findByFarmerId(farmerId);
