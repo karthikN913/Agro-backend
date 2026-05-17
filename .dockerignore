@@ -1,0 +1,14 @@
+target/
+.git/
+.settings/
+.classpath
+.project
+.vscode/
+apache-maven-3.9.6/
+apache-maven.zip
+frontend/
+functions/
+node_modules/
+.firebase/
+firebase-debug.log
+*.log

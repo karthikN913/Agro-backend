@@ -5,4 +5,4 @@ COPY . .
 
 RUN mvn clean package -DskipTests
 
-CMD ["sh", "-c", "java -jar target/*.jar"]
+CMD ["sh", "-c", "java -Xmx350m -Xms256m -jar target/*.jar"]
