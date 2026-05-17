@@ -127,7 +127,7 @@ public class DataLoader implements CommandLineRunner {
                 User u = new User();
                 u.setName("Agro Linken Team");
                 u.setEmail("system@agrolinken.in");
-                u.setRole(com.agrosystem.model.User.Role.ADMIN);
+                u.setRole(com.agrosystem.model.User.Role.FARMER);
                 u.setLocation("India");
                 return userRepository.save(u);
             });
