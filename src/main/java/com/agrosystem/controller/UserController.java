@@ -67,7 +67,7 @@ public class UserController {
             newUser.setName(decodedToken.getName() != null ? decodedToken.getName() : "Firebase User");
             newUser.setRole(User.Role.FARMER); // Default fallback role
             newUser.setLocation("N/A");
-            newUser.setPhone("N/A-" + uid.substring(0, 5)); // Ensure uniqueness
+            newUser.setPhone("N/A-" + uid); // Ensure perfect uniqueness and no string index errors
             
             User savedUser = userRepository.save(newUser);
             return ResponseEntity.ok(savedUser);
