@@ -64,6 +64,10 @@
             <input type="email" id="reg-email" placeholder="you@example.com">
           </div>
           <div class="form-group">
+            <label>Phone Number (Optional)</label>
+            <input type="tel" id="reg-phone" placeholder="Your mobile number">
+          </div>
+          <div class="form-group">
             <label>Password</label>
             <input type="password" id="reg-password" placeholder="Create a strong password">
           </div>
@@ -185,6 +189,7 @@
     async function handleGoogleRegister() {
       const role = document.getElementById('reg-role').value;
       const location = document.getElementById('reg-location').value.trim();
+      const phone = document.getElementById('reg-phone').value.trim() || ("N/A-" + Date.now());
       if (!location) { showToast("Please enter your location.", "error"); return; }
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
@@ -192,7 +197,7 @@
         const token = await result.user.getIdToken();
         await api.register({
           name: result.user.displayName || "Google User",
-          phone: "N/A", role, location,
+          phone: phone, role, location,
           shopName: (role === 'BUYER' || role === 'SHOP_OWNER') ? document.getElementById('reg-shop-name').value : null
         }, token);
         showToast("Registration successful! Please login.");
@@ -207,6 +212,7 @@
       const name = document.getElementById('reg-name').value.trim();
       const email = document.getElementById('reg-email').value.trim();
       const password = document.getElementById('reg-password').value;
+      const phone = document.getElementById('reg-phone').value.trim() || ("N/A-" + Date.now());
       const role = document.getElementById('reg-role').value;
       const location = document.getElementById('reg-location').value.trim();
       if (!name || !email || !password || !location) { showToast("Please fill in all required fields.", "error"); return; }
@@ -216,14 +222,30 @@
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
         const token = await userCredential.user.getIdToken();
         await api.register({
-          name, phone: "N/A", role, location,
+          name, phone: phone, role, location,
           shopName: (role === 'BUYER' || role === 'SHOP_OWNER') ? document.getElementById('reg-shop-name').value : null
         }, token);
         showToast("Account created! Please login now.");
         await firebase.auth().signOut();
         setTimeout(() => toggleAuth(), 1500);
       } catch (err) {
-        showToast("Registration failed: " + err.message, "error");
+        if (err.code === 'auth/email-already-in-use') {
+          try {
+            const loginCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+            const token = await loginCredential.user.getIdToken();
+            await api.register({
+              name, phone: phone, role, location,
+              shopName: (role === 'BUYER' || role === 'SHOP_OWNER') ? document.getElementById('reg-shop-name').value : null
+            }, token);
+            showToast("Account profile updated! Please login.");
+            await firebase.auth().signOut();
+            setTimeout(() => toggleAuth(), 1500);
+          } catch(loginErr) {
+            showToast("Registration failed: Account already exists but wrong password.", "error");
+          }
+        } else {
+          showToast("Registration failed: " + err.message, "error");
+        }
       } finally {
         setLoading('register-btn', false);
       }

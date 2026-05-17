@@ -35,8 +35,16 @@ public class UserController {
             String uid = decodedToken.getUid();
             String email = decodedToken.getEmail();
             
-            if (userRepository.findByFirebaseUid(uid).isPresent()) {
-                return ResponseEntity.badRequest().body("User already registered.");
+            Optional<User> existingUserOpt = userRepository.findByFirebaseUid(uid);
+            if (existingUserOpt.isPresent()) {
+                User existingUser = existingUserOpt.get();
+                existingUser.setName(user.getName());
+                existingUser.setPhone(user.getPhone());
+                existingUser.setRole(user.getRole());
+                existingUser.setLocation(user.getLocation());
+                existingUser.setShopName(user.getShopName());
+                User savedUser = userRepository.save(existingUser);
+                return ResponseEntity.ok(savedUser);
             }
             
             user.setFirebaseUid(uid);
