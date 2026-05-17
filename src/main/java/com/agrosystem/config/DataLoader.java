@@ -28,8 +28,20 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        seedSchemes();
-        seedCommunityPosts();
+        System.out.println("[DataLoader] Starting database seeding...");
+        try {
+            seedSchemes();
+        } catch (Throwable t) {
+            System.err.println("[DataLoader] ERROR: Failed to seed government schemes: " + t.getMessage());
+            t.printStackTrace();
+        }
+        try {
+            seedCommunityPosts();
+        } catch (Throwable t) {
+            System.err.println("[DataLoader] ERROR: Failed to seed community posts: " + t.getMessage());
+            t.printStackTrace();
+        }
+        System.out.println("[DataLoader] Database seeding process completed.");
     }
 
     // ─── Government Schemes ────────────────────────────────────────────────────
