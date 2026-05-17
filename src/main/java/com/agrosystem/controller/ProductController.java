@@ -135,5 +135,19 @@ public class ProductController {
 
         return ResponseEntity.ok(saved);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id, @RequestParam Long farmerId) {
+        Optional<Product> productOpt = productRepository.findById(id);
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Product product = productOpt.get();
+        if (product.getFarmer() == null || !product.getFarmer().getId().equals(farmerId)) {
+            return ResponseEntity.status(403).body("Unauthorized to delete this product");
+        }
+        productRepository.deleteById(id);
+        return ResponseEntity.ok("Product deleted successfully");
+    }
 }
 
