@@ -57,14 +57,24 @@ public class UserController {
             
             Optional<User> userOpt = userRepository.findByFirebaseUid(uid);
             if (userOpt.isPresent()) {
-                return ResponseEntity.ok(userOpt.get());
+                User existingUser = userOpt.get();
+                // Self-heal generic fallback names
+                if ("Firebase User".equals(existingUser.getName()) && existingUser.getEmail() != null) {
+                    String prefix = existingUser.getEmail().split("@")[0];
+                    existingUser.setName(prefix);
+                    userRepository.save(existingUser);
+                }
+                return ResponseEntity.ok(existingUser);
             }
             
             // Fallback: If user exists in Firebase but not locally (e.g. split-brain or Google Sign-In), auto-register them
+            String fallbackEmail = decodedToken.getEmail() != null ? decodedToken.getEmail() : uid + "@placeholder.com";
+            String fallbackName = decodedToken.getName() != null ? decodedToken.getName() : fallbackEmail.split("@")[0];
+            
             User newUser = new User();
             newUser.setFirebaseUid(uid);
-            newUser.setEmail(decodedToken.getEmail() != null ? decodedToken.getEmail() : uid + "@placeholder.com");
-            newUser.setName(decodedToken.getName() != null ? decodedToken.getName() : "Firebase User");
+            newUser.setEmail(fallbackEmail);
+            newUser.setName(fallbackName);
             newUser.setRole(User.Role.FARMER); // Default fallback role
             newUser.setLocation("N/A");
             newUser.setPhone("N/A-" + uid); // Ensure perfect uniqueness and no string index errors
