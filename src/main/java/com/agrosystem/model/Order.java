@@ -9,22 +9,34 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne
     @JoinColumn(name = "buyer_id")
     private User buyer;
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
     private int quantity;
     private double totalPrice;
+
+    @ManyToOne
+    @JoinColumn(name = "transporter_id")
+    private User transporter;
+
+    private String transporterLocation;
+
     @Enumerated(EnumType.STRING)
     private Status status;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum Status { PENDING, ACCEPTED, SHIPPED, DELIVERED }
 
     public Order() {}
 
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public User getBuyer() { return buyer; }
@@ -35,6 +47,10 @@ public class Order {
     public void setQuantity(int quantity) { this.quantity = quantity; }
     public double getTotalPrice() { return totalPrice; }
     public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
+    public User getTransporter() { return transporter; }
+    public void setTransporter(User transporter) { this.transporter = transporter; }
+    public String getTransporterLocation() { return transporterLocation; }
+    public void setTransporterLocation(String transporterLocation) { this.transporterLocation = transporterLocation; }
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

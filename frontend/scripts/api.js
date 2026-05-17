@@ -72,11 +72,42 @@ const api = {
         return res.json();
     },
 
+    // ── Transporter Endpoints ───────────────────────────────────────────────────────
+
+    async getAvailableDeliveries() {
+        const res = await fetch(`${API_BASE_URL}/orders/transporter/available`, { headers: getAuthHeaders() });
+        return res.json();
+    },
+
+    async getTransporterOrders(transporterId) {
+        const res = await fetch(`${API_BASE_URL}/orders/transporter/${transporterId}`, { headers: getAuthHeaders() });
+        return res.json();
+    },
+
+    async assignTransporter(orderId, transporterId) {
+        const res = await fetch(`${API_BASE_URL}/orders/${orderId}/assign/${transporterId}`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
     async updateOrderStatus(orderId, status) {
         const res = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
             method: 'PATCH',
             headers: getAuthHeaders(),
             body: JSON.stringify({ status })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    async updateTransporterLocation(orderId, location) {
+        const res = await fetch(`${API_BASE_URL}/orders/${orderId}/location`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ location })
         });
         if (!res.ok) throw new Error(await res.text());
         return res.json();

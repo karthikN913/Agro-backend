@@ -49,6 +49,13 @@
         <a href="#" class="sidebar-link" id="credit-book-link" onclick="switchTab('credit-book')"><span class="icon">📓</span> Credit Book (Udhar)</a>
       </div>
 
+      <div class="sidebar-section" id="transporter-sidebar" style="display:none;">
+        <div class="sidebar-label">Transporter Tools</div>
+        <a href="#" class="sidebar-link" id="transporter-dashboard-link" onclick="switchTab('transporter')">
+          <span class="icon">🚚</span> Transporter Dashboard
+        </a>
+      </div>
+
       <div class="sidebar-section" id="buyer-sidebar" style="display:none;">
         <div class="sidebar-label">Buyer Tools</div>
         <a href="marketplace.html" class="sidebar-link"><span class="icon">🛒</span> Browse Market</a>
@@ -223,6 +230,30 @@
           <!-- Populate dynamically -->
         </div>
       </div>
+
+      <!-- Transporter Dashboard View -->
+      <div id="transporter-view" style="display:none; margin-bottom:2.5rem;">
+        <div class="page-header">
+          <div>
+            <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">🚚 Transporter Logistics Dashboard</h1>
+            <p style="color:var(--text-muted);">Manage deliveries – claim available orders and update their delivery status.</p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+            📥 Available Delivery Jobs
+          </h2>
+          <div class="grid" id="available-deliveries-grid"></div>
+        </div>
+
+        <div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+            📦 My Assigned Deliveries
+          </h2>
+          <div class="grid" id="my-deliveries-grid"></div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -322,8 +353,16 @@
     if (user.role === 'BUYER' || user.role === 'SHOP_OWNER') {
       document.getElementById('buyer-sidebar').style.display = '';
     }
+    if (user.role === 'TRANSPORTER') {
+      document.getElementById('transporter-sidebar').style.display = '';
+    }
 
-    loadOrders();
+    if (user.role !== 'TRANSPORTER') {
+      loadOrders();
+    } else {
+      // For transporters, switch directly to their dashboard tab on load
+      switchTab('transporter');
+    }
 
     function showToast(msg, type = 'success') {
       const c = document.getElementById('toast-container');
@@ -420,11 +459,129 @@
       } catch (e) { showToast(e.message, "error"); }
     }
 
+    // ── Transporter UI Functions ─────────────────────────────────────────────────────
+    async function loadAvailableDeliveries() {
+      try {
+        const deliveries = await api.getAvailableDeliveries();
+        const grid = document.getElementById('available-deliveries-grid');
+        if (deliveries.length === 0) {
+          grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem;">No available delivery jobs at the moment.</p>';
+          return;
+        }
+        grid.innerHTML = deliveries.map(d => {
+          return `
+            <div class="card" style="border: 1px solid var(--border); background: var(--bg-elevated); padding: 1.25rem;">
+              <div class="card-body" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                <div>
+                  <div style="display:flex; justify-content:between; align-items:center; margin-bottom:0.75rem;">
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Order #${d.id}</span>
+                    <span class="tag tag-amber" style="margin-left:auto;">Accepted</span>
+                  </div>
+                  <h3 class="card-title" style="margin-bottom:0.5rem; font-size:1.1rem; font-weight:700;">${getCategoryEmoji(d.product.category)} ${d.product.name}</h3>
+                  <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.4;">
+                    <div>🌾 <strong>Farmer:</strong> ${d.product.farmer.name} (${d.product.farmer.location})</div>
+                    <div>🏪 <strong>Buyer:</strong> ${d.buyer.name} (${d.buyer.shopName || d.buyer.location || 'N/A'})</div>
+                    <div>📦 <strong>Quantity:</strong> ${d.quantity} kg</div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:1.25rem; font-weight:800; color:var(--green-primary); margin-bottom:0.75rem;">₹${d.totalPrice}</div>
+                  <button class="btn btn-sm" style="width:100%; font-weight:600;" onclick="claimDelivery(${d.id})">🚚 Claim Delivery</button>
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+      } catch(e) { console.error(e); }
+    }
+
+    async function loadMyDeliveries() {
+      try {
+        const myOrders = await api.getTransporterOrders(user.id);
+        const grid = document.getElementById('my-deliveries-grid');
+        if (myOrders.length === 0) {
+          grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem;">You have not claimed any deliveries yet.</p>';
+          return;
+        }
+        grid.innerHTML = myOrders.map(o => {
+          const statusTag = o.status === 'DELIVERED' ? 'tag-green' : 'tag-blue';
+          const isDelivered = o.status === 'DELIVERED';
+          return `
+            <div class="card" style="border: 1px solid ${isDelivered ? 'var(--border)' : 'var(--green-primary)'}; background: var(--bg-elevated); padding: 1.25rem;">
+              <div class="card-body" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                <div>
+                  <div style="display:flex; justify-content:between; align-items:center; margin-bottom:0.75rem;">
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Order #${o.id}</span>
+                    <span class="tag ${statusTag}" style="margin-left:auto;">${o.status === 'SHIPPED' ? 'In Transit' : o.status}</span>
+                  </div>
+                  <h3 class="card-title" style="margin-bottom:0.5rem; font-size:1.1rem; font-weight:700;">${getCategoryEmoji(o.product.category)} ${o.product.name}</h3>
+                  <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.4;">
+                    <div>🌾 <strong>Farmer:</strong> ${o.product.farmer.name} (${o.product.farmer.location})</div>
+                    <div>🏪 <strong>Buyer:</strong> ${o.buyer.name} (${o.buyer.shopName || o.buyer.location || 'N/A'})</div>
+                    <div>📦 <strong>Quantity:</strong> ${o.quantity} kg</div>
+                    ${o.transporterLocation ? `<div style="margin-top:0.25rem; color:var(--green-light);">📍 <strong>Last Location:</strong> ${o.transporterLocation}</div>` : ''}
+                  </div>
+                </div>
+                <div>
+                  ${!isDelivered ? `
+                    <div style="margin-top:0.75rem; border-top: 1px solid var(--border); padding-top:0.75rem;">
+                      <div class="form-group" style="margin-bottom:0.5rem;">
+                        <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Update Status</label>
+                        <select id="delivery-status-${o.id}" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem;">
+                          <option value="SHIPPED" ${o.status==='SHIPPED'?'selected':''}>🚚 In Transit</option>
+                          <option value="DELIVERED">📦 Delivered</option>
+                        </select>
+                      </div>
+                      <div class="form-group" style="margin-bottom:0.75rem;">
+                        <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Current Location</label>
+                        <input type="text" id="delivery-loc-${o.id}" placeholder="e.g. Near highway toll, Punjab" value="${o.transporterLocation || ''}" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem;">
+                      </div>
+                      <button class="btn btn-sm" style="width:100%; font-weight:600;" onclick="updateDelivery(${o.id})">💾 Save Updates</button>
+                    </div>
+                  ` : `
+                    <div style="margin-top:0.5rem; text-align:center; color:var(--text-muted); font-size:0.85rem; padding-top:0.5rem; border-top:1px solid var(--border);">
+                      ✅ Delivery completed successfully!
+                    </div>
+                  `}
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+      } catch(e) { console.error(e); }
+    }
+
+    async function claimDelivery(orderId) {
+      try {
+        await api.assignTransporter(orderId, user.id);
+        showToast('Delivery claimed successfully!');
+        loadAvailableDeliveries();
+        loadMyDeliveries();
+      } catch(e) {
+        showToast(e.message, 'error');
+      }
+    }
+
+    async function updateDelivery(orderId) {
+      try {
+        const status = document.getElementById(`delivery-status-${orderId}`).value;
+        const location = document.getElementById(`delivery-loc-${orderId}`).value.trim();
+        
+        await api.updateOrderStatus(orderId, status);
+        if (location) {
+          await api.updateTransporterLocation(orderId, location);
+        }
+        showToast('Delivery updated successfully!');
+        loadMyDeliveries();
+      } catch(e) {
+        showToast(e.message, 'error');
+      }
+    }
+
     // ── Tab Switching ────────────────────────────────────────────────────────
     function switchTab(tabName) {
       document.getElementById('dashboard-view').style.display = 'none';
       document.getElementById('credit-book-view').style.display = 'none';
       document.getElementById('buyer-subscriptions-view').style.display = 'none';
+      document.getElementById('transporter-view').style.display = 'none';
 
       document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
 
@@ -441,6 +598,11 @@
         document.getElementById('buyer-subscriptions-view').style.display = '';
         document.getElementById('crop-alerts-link').classList.add('active');
         loadSubscriptions();
+      } else if (tabName === 'transporter') {
+        document.getElementById('transporter-view').style.display = '';
+        document.getElementById('transporter-dashboard-link').classList.add('active');
+        loadAvailableDeliveries();
+        loadMyDeliveries();
       }
     }
 

@@ -225,7 +225,7 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
               <span style="font-size:0.85rem;color:var(--text-muted);">Stock: ${p.quantity} kg</span>
             </div>
-            ${user.role !== 'FARMER' ? `
+            ${(user.role === 'BUYER' || user.role === 'SHOP_OWNER') ? `
               <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
                 <button class="btn btn-secondary btn-sm" style="flex:1;margin-top:0;" onclick='openReviewModal(${p.id}, "${p.name.replace(/"/g, "&quot;")}")'>
                   ⭐ Review
@@ -234,7 +234,7 @@
                   ${p.quantity === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
                   ${p.quantity === 0 ? '❌ Out of Stock' : '🛒 Buy Now'}
                 </button>
-              </div>` : '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding-top:0.5rem;border-top:1px solid var(--border);">Your product</p>'}
+              </div>` : (user.role === 'FARMER' ? '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding-top:0.5rem;border-top:1px solid var(--border);">Your product</p>' : '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding-top:0.5rem;border-top:1px solid var(--border);">Logistics Only (Cannot Purchase)</p>')}
           </div>
         </div>
       `).join('');
