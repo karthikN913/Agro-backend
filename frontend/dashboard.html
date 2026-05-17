@@ -29,7 +29,7 @@
 
       <div class="sidebar-section">
         <div class="sidebar-label">Main</div>
-        <a href="dashboard.html" class="sidebar-link active"><span class="icon">📊</span> Dashboard</a>
+        <a href="#" class="sidebar-link active" id="dashboard-main-link" onclick="switchTab('dashboard')"><span class="icon">📊</span> Dashboard</a>
         <a href="marketplace.html" class="sidebar-link"><span class="icon">🛍️</span> Marketplace</a>
         <a href="chat.html" class="sidebar-link"><span class="icon">💬</span> Messages</a>
         <a href="community.html" class="sidebar-link"><span class="icon">🌐</span> Community</a>
@@ -43,10 +43,16 @@
         <a href="#" class="sidebar-link"><span class="icon">📈</span> Price Trends</a>
       </div>
 
+      <!-- Ledger / Credit Book (For Farmers and Shop Owners) -->
+      <div class="sidebar-section" id="credit-sidebar" style="display:none;">
+        <div class="sidebar-label">Ledger Tools</div>
+        <a href="#" class="sidebar-link" id="credit-book-link" onclick="switchTab('credit-book')"><span class="icon">📓</span> Credit Book (Udhar)</a>
+      </div>
+
       <div class="sidebar-section" id="buyer-sidebar" style="display:none;">
         <div class="sidebar-label">Buyer Tools</div>
         <a href="marketplace.html" class="sidebar-link"><span class="icon">🛒</span> Browse Market</a>
-        <a href="#" class="sidebar-link"><span class="icon">⭐</span> Wishlist</a>
+        <a href="#" class="sidebar-link" id="crop-alerts-link" onclick="switchTab('buyer-subscriptions')"><span class="icon">🔔</span> Crop Alerts</a>
       </div>
 
       <div class="sidebar-section" style="margin-top:auto;">
@@ -57,65 +63,139 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <div class="page-header">
+      <!-- Default Dashboard View -->
+      <div id="dashboard-view">
+        <div class="page-header">
+          <div>
+            <h1 id="welcome-msg">Welcome back!</h1>
+            <p id="welcome-sub">Here's what's happening on your platform today.</p>
+          </div>
+          <button id="add-product-btn" class="btn btn-sm hidden" onclick="document.getElementById('add-product-modal').classList.remove('hidden')" style="width:auto;">
+            ➕ Add Product
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon green">📦</div>
+            <div class="stat-info">
+              <div class="stat-label">Total Orders</div>
+              <div class="stat-value" id="stat-orders">–</div>
+            </div>
+          </div>
+          <div class="stat-card" id="stat-products-card" style="display:none;">
+            <div class="stat-icon amber">🌾</div>
+            <div class="stat-info">
+              <div class="stat-label">My Products</div>
+              <div class="stat-value" id="stat-products">–</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">✅</div>
+            <div class="stat-info">
+              <div class="stat-label">Delivered</div>
+              <div class="stat-value" id="stat-delivered">–</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">⏳</div>
+            <div class="stat-info">
+              <div class="stat-label">Pending</div>
+              <div class="stat-value" id="stat-pending">–</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Farmer Products Section -->
+        <div id="farmer-products-section" style="display:none; margin-bottom:2.5rem;">
+          <div class="page-header">
+            <div><h2 style="font-size:1.2rem;font-weight:700;">Your Listed Products</h2></div>
+          </div>
+          <div class="grid" id="products-grid">
+            <div style="color:var(--text-muted);padding:2rem;text-align:center;grid-column:1/-1;">Loading products...</div>
+          </div>
+        </div>
+
+        <!-- Orders Section -->
         <div>
-          <h1 id="welcome-msg">Welcome back!</h1>
-          <p id="welcome-sub">Here's what's happening on your platform today.</p>
-        </div>
-        <button id="add-product-btn" class="btn btn-sm hidden" onclick="document.getElementById('add-product-modal').classList.remove('hidden')" style="width:auto;">
-          ➕ Add Product
-        </button>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-grid" id="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon green">📦</div>
-          <div class="stat-info">
-            <div class="stat-label">Total Orders</div>
-            <div class="stat-value" id="stat-orders">–</div>
+          <div class="page-header">
+            <div><h2 style="font-size:1.2rem;font-weight:700;">Recent Orders</h2></div>
           </div>
-        </div>
-        <div class="stat-card" id="stat-products-card" style="display:none;">
-          <div class="stat-icon amber">🌾</div>
-          <div class="stat-info">
-            <div class="stat-label">My Products</div>
-            <div class="stat-value" id="stat-products">–</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon blue">✅</div>
-          <div class="stat-info">
-            <div class="stat-label">Delivered</div>
-            <div class="stat-value" id="stat-delivered">–</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon red">⏳</div>
-          <div class="stat-info">
-            <div class="stat-label">Pending</div>
-            <div class="stat-value" id="stat-pending">–</div>
+          <div class="grid" id="orders-grid">
+            <div style="color:var(--text-muted);padding:2rem;text-align:center;grid-column:1/-1;">Loading orders...</div>
           </div>
         </div>
       </div>
 
-      <!-- Farmer Products Section -->
-      <div id="farmer-products-section" style="display:none; margin-bottom:2.5rem;">
+      <!-- Credit Book View -->
+      <div id="credit-book-view" style="display:none; margin-bottom:2.5rem;">
         <div class="page-header">
-          <div><h2 style="font-size:1.2rem;font-weight:700;">Your Listed Products</h2></div>
+          <div>
+            <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">📓 Digital Credit Book (Udhar Ledger)</h1>
+            <p style="color:var(--text-muted);">Manage buyer credits, payments, and outstanding balances securely.</p>
+          </div>
+          <button class="btn btn-sm" onclick="document.getElementById('add-credit-modal').classList.remove('hidden')" style="width:auto;">
+            ➕ Record Transaction
+          </button>
         </div>
-        <div class="grid" id="products-grid">
-          <div style="color:var(--text-muted);padding:2rem;text-align:center;grid-column:1/-1;">Loading products...</div>
+
+        <!-- Ledger Stats -->
+        <div class="stats-grid" style="margin-bottom:2rem;">
+          <div class="stat-card">
+            <div class="stat-icon red" style="background:rgba(239, 68, 68, 0.1);">🔴</div>
+            <div class="stat-info">
+              <div class="stat-label">Net Outstanding Balance</div>
+              <div class="stat-value" id="ledger-net-outstanding" style="color:var(--red);">₹0.00</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber" style="background:rgba(245, 158, 11, 0.1);">🔶</div>
+            <div class="stat-info">
+              <div class="stat-label">Total Credit Extended</div>
+              <div class="stat-value" id="ledger-total-extended" style="color:var(--amber);">₹0.00</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green" style="background:rgba(16, 185, 129, 0.1);">💚</div>
+            <div class="stat-info">
+              <div class="stat-label">Total Repayments</div>
+              <div class="stat-value" id="ledger-total-repay" style="color:var(--green-primary);">₹0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ledger Splits -->
+        <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:1.5rem;" class="responsive-split">
+          <!-- Left: Recent Ledger log -->
+          <div class="card" style="padding:1.5rem;">
+            <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;">📜 Ledger Log History</h3>
+            <div style="max-height: 400px; overflow-y: auto;" id="ledger-log-container">
+              <!-- Populate dynamically -->
+            </div>
+          </div>
+
+          <!-- Right: Customer Balance Outstanding -->
+          <div class="card" style="padding:1.5rem;">
+            <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;">👥 Outstanding Customer List</h3>
+            <div style="max-height: 400px; overflow-y: auto;" id="ledger-customers-container">
+              <!-- Populate dynamically -->
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Orders Section -->
-      <div>
+      <!-- Buyer Subscriptions View -->
+      <div id="buyer-subscriptions-view" style="display:none; margin-bottom:2.5rem;">
         <div class="page-header">
-          <div><h2 style="font-size:1.2rem;font-weight:700;">Recent Orders</h2></div>
+          <div>
+            <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">🔔 Crop Alerts & Feed Subscriptions</h1>
+            <p style="color:var(--text-muted);">Subscribe to crop categories to get notified immediately when farmers list matching items.</p>
+          </div>
         </div>
-        <div class="grid" id="orders-grid">
-          <div style="color:var(--text-muted);padding:2rem;text-align:center;grid-column:1/-1;">Loading orders...</div>
+
+        <div class="grid" id="crop-subscriptions-grid">
+          <!-- Populate dynamically -->
         </div>
       </div>
     </main>
@@ -156,6 +236,41 @@
     </div>
   </div>
 
+  <!-- Record Credit Modal -->
+  <div id="add-credit-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>📓 Record Udhar Transaction</h3>
+        <button class="modal-close" onclick="document.getElementById('add-credit-modal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Customer Name</label>
+        <input type="text" id="credit-cust-name" placeholder="e.g. Suresh Kumar">
+      </div>
+      <div class="form-group">
+        <label>Customer Phone (Optional)</label>
+        <input type="text" id="credit-cust-phone" placeholder="e.g. 9876543210">
+      </div>
+      <div class="form-group">
+        <label>Transaction Type</label>
+        <select id="credit-type">
+          <option value="CREDIT">🔴 Credit Purchase (Udhar / Outstanding Debt)</option>
+          <option value="PAYBACK">🟢 Repayment (Paid Cash / Cash Back)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Amount (₹)</label>
+        <input type="number" id="credit-amount" placeholder="e.g. 1500">
+      </div>
+      <div class="form-group">
+        <label>Description / Notes</label>
+        <input type="text" id="credit-desc" placeholder="e.g. 3 Bags of Fertilizer / Urea">
+      </div>
+      <button class="btn" onclick="submitCreditTransaction()">💾 Save Transaction</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('add-credit-modal').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -169,6 +284,9 @@
     document.getElementById('sidebar-role').textContent = roleMap[user.role] || user.role;
     document.getElementById('welcome-msg').textContent = `Welcome back, ${(user.name || 'User').split(' ')[0]}! 👋`;
 
+    if (user.role === 'FARMER' || user.role === 'SHOP_OWNER') {
+      document.getElementById('credit-sidebar').style.display = '';
+    }
     if (user.role === 'FARMER') {
       document.getElementById('add-product-btn').classList.remove('hidden');
       document.getElementById('farmer-products-section').style.display = '';
@@ -274,6 +392,173 @@
         await api.updateOrderStatus(id, status);
         showToast(`Order #${id} updated to ${status}!`);
         loadOrders();
+      } catch (e) { showToast(e.message, "error"); }
+    }
+
+    // ── Tab Switching ────────────────────────────────────────────────────────
+    function switchTab(tabName) {
+      document.getElementById('dashboard-view').style.display = 'none';
+      document.getElementById('credit-book-view').style.display = 'none';
+      document.getElementById('buyer-subscriptions-view').style.display = 'none';
+
+      document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+
+      if (tabName === 'dashboard') {
+        document.getElementById('dashboard-view').style.display = '';
+        document.getElementById('dashboard-main-link').classList.add('active');
+        loadOrders();
+        if (user.role === 'FARMER') loadFarmerProducts();
+      } else if (tabName === 'credit-book') {
+        document.getElementById('credit-book-view').style.display = '';
+        document.getElementById('credit-book-link').classList.add('active');
+        loadCreditBook();
+      } else if (tabName === 'buyer-subscriptions') {
+        document.getElementById('buyer-subscriptions-view').style.display = '';
+        document.getElementById('crop-alerts-link').classList.add('active');
+        loadSubscriptions();
+      }
+    }
+
+    // ── Credit Book (Udhar Ledger) Logic ─────────────────────────────────────
+    async function loadCreditBook() {
+      try {
+        const summary = await api.getCreditSummary(user.id);
+        document.getElementById('ledger-net-outstanding').textContent = `₹${summary.netOutstanding.toFixed(2)}`;
+        document.getElementById('ledger-total-extended').textContent = `₹${summary.totalCreditExtended.toFixed(2)}`;
+        document.getElementById('ledger-total-repay').textContent = `₹${summary.totalRepayments.toFixed(2)}`;
+
+        const ledgerList = await api.getCreditLedger(user.id);
+        const logContainer = document.getElementById('ledger-log-container');
+        if (ledgerList.length === 0) {
+          logContainer.innerHTML = `<p style="padding:1.5rem;color:var(--text-muted);text-align:center;">No ledger transactions yet.</p>`;
+        } else {
+          logContainer.innerHTML = ledgerList.map(item => {
+            const isCredit = item.type === 'CREDIT';
+            const pillClass = isCredit ? 'tag-red' : 'tag-green';
+            const typeLabel = isCredit ? 'Credit (Udhar)' : 'Repayment';
+            const sign = isCredit ? '-' : '+';
+            const amountColor = isCredit ? 'var(--red)' : 'var(--green-primary)';
+            const date = new Date(item.createdAt).toLocaleDateString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; border-bottom:1px solid var(--border); font-size:0.9rem;">
+                <div>
+                  <div style="font-weight:600;">${item.customerName}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">${item.description || 'No notes'} • ${date}</div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="tag ${pillClass}" style="margin-bottom:0.25rem;">${typeLabel}</span>
+                  <div style="font-weight:700; color:${amountColor}; font-size:0.95rem;">${sign}₹${item.amount.toFixed(2)}</div>
+                </div>
+              </div>`;
+          }).join('');
+        }
+
+        // Debtor Balances
+        const customersContainer = document.getElementById('ledger-customers-container');
+        if (summary.customers.length === 0) {
+          customersContainer.innerHTML = `<p style="padding:1.5rem;color:var(--text-muted);text-align:center;">No customers recorded.</p>`;
+        } else {
+          customersContainer.innerHTML = summary.customers.map(c => {
+            const isDebtor = c.outstanding > 0;
+            const outstandingColor = isDebtor ? 'var(--red)' : 'var(--green-primary)';
+            const statusLabel = isDebtor ? `Outstanding Debt: ₹${c.outstanding.toFixed(2)}` : 'Fully Settled';
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; border-bottom:1px solid var(--border); font-size:0.9rem;">
+                <div>
+                  <div style="font-weight:600;">${c.name}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">📞 ${c.phone}</div>
+                  <div style="font-size:0.8rem; font-weight:500; color:${outstandingColor}; margin-top:0.25rem;">${statusLabel}</div>
+                </div>
+                <div style="display:flex; align-items:center;">
+                  ${isDebtor ? `
+                    <button class="btn btn-sm" style="font-size:0.75rem; padding:0.35rem 0.6rem; border-radius:6px;" onclick="quickPayback('${c.name}', '${c.phone}')">
+                      🟢 Payback
+                    </button>` : '✅'}
+                </div>
+              </div>`;
+          }).join('');
+        }
+      } catch (e) { console.error("Error loading Credit Book: ", e); }
+    }
+
+    function quickPayback(name, phone) {
+      document.getElementById('credit-cust-name').value = name;
+      document.getElementById('credit-cust-phone').value = phone === 'N/A' ? '' : phone;
+      document.getElementById('credit-type').value = 'PAYBACK';
+      document.getElementById('credit-amount').value = '';
+      document.getElementById('credit-desc').value = 'Cash Repayment';
+      document.getElementById('add-credit-modal').classList.remove('hidden');
+    }
+
+    async function submitCreditTransaction() {
+      try {
+        const record = {
+          creditor: { id: user.id },
+          customerName: document.getElementById('credit-cust-name').value,
+          customerPhone: document.getElementById('credit-cust-phone').value,
+          type: document.getElementById('credit-type').value,
+          amount: parseFloat(document.getElementById('credit-amount').value),
+          description: document.getElementById('credit-desc').value
+        };
+
+        if (!record.customerName || !record.amount) {
+          showToast("Name and Amount are required fields.", "error");
+          return;
+        }
+
+        await api.addCreditRecord(record);
+        showToast("Credit Book updated successfully!");
+        document.getElementById('add-credit-modal').classList.add('hidden');
+        loadCreditBook();
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // ── Crop Alerts Logic ────────────────────────────────────────────────────
+    const CROP_CATEGORIES = ["Vegetables", "Fruits", "Grains", "Dairy", "Spices", "Pulses"];
+
+    async function loadSubscriptions() {
+      try {
+        const activeSubs = await api.getSubscriptions(user.id);
+        const activeCategories = new Set(activeSubs.map(s => s.category));
+
+        const grid = document.getElementById('crop-subscriptions-grid');
+        grid.innerHTML = CROP_CATEGORIES.map(category => {
+          const isSubbed = activeCategories.has(category);
+          const btnClass = isSubbed ? 'btn-secondary' : '';
+          const btnText = isSubbed ? '🔕 Unsubscribe' : '🔔 Get Alerts';
+          const indicator = isSubbed ? '<span class="tag tag-green">Alerts Active</span>' : '<span class="tag tag-amber" style="background:rgba(255,255,255,0.05);color:var(--text-muted);">Muted</span>';
+          return `
+            <div class="card" style="padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; min-height:160px; border:${isSubbed ? '1px solid var(--green-primary)' : '1px solid var(--border)'};">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                  <span style="font-size:1.8rem;">${getCategoryEmoji(category)}</span>
+                  ${indicator}
+                </div>
+                <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:0.25rem;">${category}</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Notifications when new ${category.toLowerCase()} are listed.</p>
+              </div>
+              <div style="margin-top:1rem;">
+                <button class="btn btn-sm ${btnClass}" style="width:100%; font-size:0.8rem; padding:0.5rem;" onclick="toggleAlertSubscription('${category}', ${isSubbed})">
+                  ${btnText}
+                </button>
+              </div>
+            </div>`;
+        }).join('');
+      } catch (e) { console.error("Error loading Subscriptions: ", e); }
+    }
+
+    async function toggleAlertSubscription(category, currentSubbed) {
+      try {
+        if (currentSubbed) {
+          await api.unsubscribeFromCrop(user.id, category);
+          showToast(`Unsubscribed from ${category} alerts.`);
+        } else {
+          await api.subscribeToCrop(user.id, category);
+          showToast(`Subscribed! You will get alerts for ${category}.`);
+        }
+        loadSubscriptions();
       } catch (e) { showToast(e.message, "error"); }
     }
 

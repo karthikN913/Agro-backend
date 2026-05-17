@@ -147,6 +147,69 @@ const api = {
         const res = await fetch(`${API_BASE_URL}/messages/${userId1}/${userId2}`, { headers: getAuthHeaders() });
         if (!res.ok) return [];
         return res.json();
+    },
+
+    // ── Search & Filters ──────────────────────────────────────────────────────
+    async searchProducts(params) {
+        const queryParams = new URLSearchParams();
+        if (params.query) queryParams.append('query', params.query);
+        if (params.category) queryParams.append('category', params.category);
+        if (params.minPrice) queryParams.append('minPrice', params.minPrice);
+        if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
+        if (params.location) queryParams.append('location', params.location);
+
+        const res = await fetch(`${API_BASE_URL}/products/search?${queryParams.toString()}`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    // ── Credit Ledger (Udhar) ──────────────────────────────────────────────────
+    async getCreditLedger(userId) {
+        const res = await fetch(`${API_BASE_URL}/credit?userId=${userId}`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    async addCreditRecord(recordData) {
+        const res = await fetch(`${API_BASE_URL}/credit`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(recordData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    async getCreditSummary(userId) {
+        const res = await fetch(`${API_BASE_URL}/credit/summary?userId=${userId}`, { headers: getAuthHeaders() });
+        if (!res.ok) return { totalCreditExtended: 0, totalRepayments: 0, netOutstanding: 0, customers: [] };
+        return res.json();
+    },
+
+    // ── Crop Category Subscriptions ───────────────────────────────────────────
+    async getSubscriptions(userId) {
+        const res = await fetch(`${API_BASE_URL}/subscriptions?userId=${userId}`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    async subscribeToCrop(userId, category) {
+        const res = await fetch(`${API_BASE_URL}/subscriptions`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user: { id: userId }, category })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    async unsubscribeFromCrop(userId, category) {
+        const res = await fetch(`${API_BASE_URL}/subscriptions?userId=${userId}&category=${encodeURIComponent(category)}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return true;
     }
 };
 

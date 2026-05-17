@@ -41,14 +41,39 @@
     </aside>
 
     <main class="main-content">
-      <div class="page-header">
+      <div class="page-header" style="margin-bottom:1.5rem;">
         <div>
-          <h1>🛍️ Marketplace</h1>
+          <h1>🛍️ Smart Marketplace</h1>
           <p>Fresh produce directly from farmers across India</p>
         </div>
-        <div style="display:flex;gap:0.75rem;align-items:center;">
-          <input type="search" id="search-input" placeholder="🔍  Search products..." oninput="searchProducts()"
-            style="padding:0.65rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:Inter,sans-serif;outline:none;width:240px;transition:all 0.2s;">
+      </div>
+
+      <!-- SaaS Multi-Filter Control Panel -->
+      <div class="card" style="padding:1.25rem; margin-bottom:1.5rem; border: 1px solid var(--border); background:rgba(22, 30, 22, 0.65); backdrop-filter:blur(10px);">
+        <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap:1rem; align-items:flex-end;" class="responsive-split">
+          <div class="form-group" style="margin:0;">
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.35rem; display:block;">🔍 Search Crop Name</label>
+            <input type="text" id="filter-query" placeholder="e.g. Tomatoes, Basmati" oninput="applyAdvancedFilters()"
+              style="width:100%; padding:0.65rem 1rem; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem; outline:none;">
+          </div>
+          
+          <div class="form-group" style="margin:0;">
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.35rem; display:block;">📍 Location / State</label>
+            <input type="text" id="filter-location" placeholder="e.g. Punjab, Bihar" oninput="applyAdvancedFilters()"
+              style="width:100%; padding:0.65rem 1rem; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem; outline:none;">
+          </div>
+
+          <div class="form-group" style="margin:0;">
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.35rem; display:block;">💵 Max Price (₹/kg)</label>
+            <input type="number" id="filter-max-price" placeholder="e.g. 100" oninput="applyAdvancedFilters()"
+              style="width:100%; padding:0.65rem 1rem; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem; outline:none;">
+          </div>
+
+          <div class="form-group" style="margin:0;">
+            <button class="btn btn-secondary btn-sm" style="width:100%; font-size:0.8rem; padding:0.65rem; margin:0;" onclick="clearFilters()">
+              🧹 Clear Filters
+            </button>
+          </div>
         </div>
       </div>
 
@@ -217,14 +242,50 @@
       });
     }
 
+    let selectedCategory = 'all';
+
     function filterCategory(cat) {
-      if (cat === 'all') renderProducts(allProducts);
-      else renderProducts(allProducts.filter(p => p.category === cat));
+      selectedCategory = cat;
+      // Update active link state in sidebar
+      document.querySelectorAll('.sidebar-section a').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('onclick') === `filterCategory('${cat}')`) {
+          link.classList.add('active');
+        }
+      });
+      applyAdvancedFilters();
     }
 
-    function searchProducts() {
-      const q = document.getElementById('search-input').value.toLowerCase();
-      renderProducts(allProducts.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.farmer.name.toLowerCase().includes(q)));
+    async function applyAdvancedFilters() {
+      try {
+        const params = {
+          query: document.getElementById('filter-query').value.trim(),
+          location: document.getElementById('filter-location').value.trim(),
+          maxPrice: document.getElementById('filter-max-price').value.trim(),
+          category: selectedCategory
+        };
+
+        const filtered = await api.searchProducts(params);
+        renderProducts(filtered);
+      } catch (e) {
+        console.error("Error searching products: ", e);
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('filter-query').value = '';
+      document.getElementById('filter-location').value = '';
+      document.getElementById('filter-max-price').value = '';
+      selectedCategory = 'all';
+      
+      document.querySelectorAll('.sidebar-section a').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('onclick') === "filterCategory('all')") {
+          link.classList.add('active');
+        }
+      });
+
+      loadMarketplace();
     }
 
     function openPurchaseModal(product) {
