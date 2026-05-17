@@ -67,3 +67,12 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Maven and Java outputs
+target/
+*.class
+*.jar
+*.war
+*.ear
+/apache-maven-3.9.6/
+/apache-maven.zip
