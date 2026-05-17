@@ -59,7 +59,18 @@ public class UserController {
             if (userOpt.isPresent()) {
                 return ResponseEntity.ok(userOpt.get());
             }
-            return ResponseEntity.status(404).body("User not found in local database.");
+            
+            // Fallback: If user exists in Firebase but not locally (e.g. split-brain or Google Sign-In), auto-register them
+            User newUser = new User();
+            newUser.setFirebaseUid(uid);
+            newUser.setEmail(decodedToken.getEmail() != null ? decodedToken.getEmail() : uid + "@placeholder.com");
+            newUser.setName(decodedToken.getName() != null ? decodedToken.getName() : "Firebase User");
+            newUser.setRole(User.Role.FARMER); // Default fallback role
+            newUser.setLocation("N/A");
+            newUser.setPhone("N/A-" + uid.substring(0, 5)); // Ensure uniqueness
+            
+            User savedUser = userRepository.save(newUser);
+            return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: " + e.getMessage());
         }
