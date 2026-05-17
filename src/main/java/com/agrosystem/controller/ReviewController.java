@@ -12,7 +12,6 @@ import java.util.OptionalDouble;
 
 @RestController
 @RequestMapping("/api/reviews")
-@CrossOrigin(origins = "*")
 public class ReviewController {
 
     @Autowired

@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/schemes")
-@CrossOrigin(origins = "*")
 public class GovernmentSchemeController {
 
     @Autowired

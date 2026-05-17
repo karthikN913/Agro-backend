@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/community")
-@CrossOrigin(origins = "*")
 public class CommunityPostController {
 
     @Autowired

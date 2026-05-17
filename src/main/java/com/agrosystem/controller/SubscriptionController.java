@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/subscriptions")
-@CrossOrigin(origins = "*")
 public class SubscriptionController {
 
     @Autowired

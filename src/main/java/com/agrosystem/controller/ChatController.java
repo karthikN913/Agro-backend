@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-@CrossOrigin(origins = "*") // For local testing and live web app
 public class ChatController {
 
     @Autowired
