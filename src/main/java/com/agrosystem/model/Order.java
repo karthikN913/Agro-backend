@@ -30,6 +30,9 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    private Double deliveryFee = 0.0;
+    private String paymentMode = "Cash on Delivery";
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum Status { PENDING, ACCEPTED, SHIPPED, DELIVERED }
@@ -55,4 +58,8 @@ public class Order {
     public void setStatus(Status status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Double getDeliveryFee() { return deliveryFee; }
+    public void setDeliveryFee(Double deliveryFee) { this.deliveryFee = deliveryFee; }
+    public String getPaymentMode() { return paymentMode; }
+    public void setPaymentMode(String paymentMode) { this.paymentMode = paymentMode; }
 }

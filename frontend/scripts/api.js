@@ -241,6 +241,48 @@ const api = {
         });
         if (!res.ok) throw new Error(await res.text());
         return true;
+    },
+
+    // ── Transporter Logistics Bidding ──────────────────────────────────────────
+    async updateVehicleProfile(userId, vehicleData) {
+        const res = await fetch(`${API_BASE_URL}/users/${userId}/vehicle`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(vehicleData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    async getBidsForOrder(orderId) {
+        const res = await fetch(`${API_BASE_URL}/bids/order/${orderId}`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    async getBidsByTransporter(transporterId) {
+        const res = await fetch(`${API_BASE_URL}/bids/transporter/${transporterId}`, { headers: getAuthHeaders() });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    async submitDeliveryBid(bidData) {
+        const res = await fetch(`${API_BASE_URL}/bids`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(bidData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    async acceptDeliveryBid(bidId) {
+        const res = await fetch(`${API_BASE_URL}/bids/${bidId}/accept`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
     }
 };
 

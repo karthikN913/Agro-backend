@@ -20,6 +20,11 @@ public class User {
     private String location;
     private String shopName; // Only for BUYER
 
+    // Vehicle details for TRANSPORTER role
+    private String vehicleType;
+    private String vehicleNumber;
+    private Double vehicleCapacity;
+
     public enum Role { FARMER, BUYER, SHOP_OWNER, TRANSPORTER, ADMIN }
 
     public User() {}
@@ -40,4 +45,11 @@ public class User {
     public void setLocation(String location) { this.location = location; }
     public String getShopName() { return shopName; }
     public void setShopName(String shopName) { this.shopName = shopName; }
+
+    public String getVehicleType() { return vehicleType; }
+    public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
+    public String getVehicleNumber() { return vehicleNumber; }
+    public void setVehicleNumber(String vehicleNumber) { this.vehicleNumber = vehicleNumber; }
+    public Double getVehicleCapacity() { return vehicleCapacity; }
+    public void setVehicleCapacity(Double vehicleCapacity) { this.vehicleCapacity = vehicleCapacity; }
 }

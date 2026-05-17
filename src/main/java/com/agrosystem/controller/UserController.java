@@ -106,4 +106,25 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PutMapping("/{id}/vehicle")
+    public ResponseEntity<?> updateVehicleProfile(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        User user = userOpt.get();
+        if (user.getRole() != User.Role.TRANSPORTER) {
+            return ResponseEntity.badRequest().body("Only transporters can register vehicle profiles");
+        }
+        
+        user.setVehicleType((String) body.get("vehicleType"));
+        user.setVehicleNumber((String) body.get("vehicleNumber"));
+        if (body.get("vehicleCapacity") != null) {
+            user.setVehicleCapacity(Double.valueOf(body.get("vehicleCapacity").toString()));
+        }
+        
+        User saved = userRepository.save(user);
+        return ResponseEntity.ok(saved);
+    }
 }

@@ -236,8 +236,35 @@
         <div class="page-header">
           <div>
             <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">🚚 Transporter Logistics Dashboard</h1>
-            <p style="color:var(--text-muted);">Manage deliveries – claim available orders and update their delivery status.</p>
+            <p style="color:var(--text-muted);">Manage deliveries – submit quotes for available shipments and track active assignments.</p>
           </div>
+        </div>
+
+        <!-- Vehicle Profile Registration Card -->
+        <div class="card" style="margin-bottom: 2rem; border: 1px solid var(--border); padding: 1.5rem;">
+          <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+            🚛 Vehicle Carrier Registration
+          </h3>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Vehicle Type</label>
+              <select id="vehicle-type" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:inherit; font-size:0.85rem;">
+                <option value="Tractor">🚜 Tractor</option>
+                <option value="Mini Truck">🛺 Mini Truck / Chota Hathi</option>
+                <option value="Truck">🚚 Commercial Truck (Lorry)</option>
+                <option value="Two-Wheeler">🛵 Two-Wheeler (Bike/Scooter)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Vehicle Number (Plate)</label>
+              <input type="text" id="vehicle-number" placeholder="e.g. KA-19-M-2023" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:inherit; font-size:0.85rem;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Load Capacity (kg)</label>
+              <input type="number" id="vehicle-capacity" placeholder="e.g. 1500" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:inherit; font-size:0.85rem;">
+            </div>
+          </div>
+          <button class="btn btn-sm" onclick="saveVehicleProfile()" style="width:auto; padding:0.5rem 1.25rem; font-weight:600;">💾 Save Vehicle Profile</button>
         </div>
 
         <div style="margin-bottom: 2rem;">
@@ -245,6 +272,13 @@
             📥 Available Delivery Jobs
           </h2>
           <div class="grid" id="available-deliveries-grid"></div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+            ⏳ My Active Delivery Bids
+          </h2>
+          <div class="grid" id="my-bids-grid"></div>
         </div>
 
         <div>
@@ -327,8 +361,48 @@
     </div>
   </div>
 
+  <!-- Submit Delivery Bid Modal -->
+  <div id="submit-bid-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>💸 Submit Delivery Quote</h3>
+        <button class="modal-close" onclick="document.getElementById('submit-bid-modal').classList.add('hidden')">✕</button>
+      </div>
+      <input type="hidden" id="bid-order-id">
+      <div class="form-group">
+        <label>Delivery Fee Quote (₹)</label>
+        <input type="number" id="bid-amount" placeholder="e.g. 450">
+        <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; display:block;">Complete freight cost for crop collection and transport.</span>
+      </div>
+      <div class="form-group">
+        <label>Estimated Transit / Delivery Time</label>
+        <input type="text" id="bid-est-time" placeholder="e.g. Within 3 hours, Tomorrow noon">
+      </div>
+      <button class="btn" onclick="submitBidQuote()" style="margin-top:1rem;">🚀 Publish Quote / Bid</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('submit-bid-modal').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- View Delivery Bids Modal -->
+  <div id="view-bids-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 580px; max-height:85vh; display:flex; flex-direction:column;">
+      <div class="modal-header">
+        <h3>🚚 Transporter Logistics Bids</h3>
+        <button class="modal-close" onclick="document.getElementById('view-bids-modal').classList.add('hidden')">✕</button>
+      </div>
+      <div id="bids-list-container" style="flex:1; overflow-y:auto; margin:1rem 0; display:flex; flex-direction:column; gap:0.75rem; padding-right:0.25rem;">
+        <!-- Loaded dynamically -->
+      </div>
+      <button class="btn btn-secondary" onclick="document.getElementById('view-bids-modal').classList.add('hidden')">Close</button>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
+
+  <!-- jsPDF and AutoTable for dynamic PDF receipts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
   <script src="scripts/api.js"></script>
   <script>
@@ -423,27 +497,62 @@
         document.getElementById('stat-pending').textContent = pending;
         const grid = document.getElementById('orders-grid');
         if (orders.length === 0) { grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem;">No orders yet.</p>'; return; }
+        
         grid.innerHTML = orders.map(o => {
           const statusTag = { PENDING: 'tag-amber', ACCEPTED: 'tag-blue', SHIPPED: 'tag-blue', DELIVERED: 'tag-green' }[o.status] || 'tag-green';
+          
+          let actionHtml = '';
+          if (user.role === 'FARMER' && o.status === 'PENDING') {
+            actionHtml = `
+              <div style="margin-top:0.5rem; margin-bottom:0.5rem;">
+                <select id="status-${o.id}" style="width:100%;padding:0.5rem;border-radius:6px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);margin-bottom:0.5rem;font-family:Inter,sans-serif;font-size:0.85rem;">
+                  <option value="ACCEPTED">✅ Accept Order</option>
+                </select>
+                <button class="btn btn-sm" style="width:100%;font-weight:600;" onclick="updateOrder(${o.id})">Update Status</button>
+              </div>`;
+          } else if (o.status === 'ACCEPTED') {
+            actionHtml = `
+              <div style="margin-top:0.5rem; margin-bottom:0.5rem;">
+                <button class="btn btn-sm btn-success" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.25rem; font-weight:600;" onclick="openViewBidsModal(${o.id})">
+                  🚚 View Logistics Bids
+                </button>
+              </div>`;
+          } else if (o.status === 'SHIPPED' && user.role === 'FARMER') {
+            actionHtml = `
+              <div style="margin-top:0.5rem; margin-bottom:0.5rem;">
+                <button class="btn btn-sm btn-success" style="width:100%; font-weight:600;" onclick="markOrderDeliveredDirectly(${o.id})">
+                  📦 Mark Delivered
+                </button>
+              </div>`;
+          }
+
+          const orderJson = JSON.stringify(o).replace(/'/g, "\\'");
+
           return `
             <div class="card">
-              <div class="card-body">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-                  <span style="font-size:0.8rem;color:var(--text-muted);">Order #${o.id}</span>
-                  <span class="tag ${statusTag}">${o.status}</span>
+              <div class="card-body" style="display:flex; flex-direction:column; justify-content:space-between; height:100%; padding:1.25rem;">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+                    <span style="font-size:0.8rem;color:var(--text-muted);">Order #${o.id}</span>
+                    <span class="tag ${statusTag}">${o.status === 'SHIPPED' ? 'In Transit' : o.status}</span>
+                  </div>
+                  <h3 class="card-title" style="margin-bottom:0.5rem; font-size:1.1rem; font-weight:700;">${getCategoryEmoji(o.product.category)} ${o.product.name}</h3>
+                  <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.5;">
+                    <div>🌾 <strong>Farmer:</strong> ${o.product.farmer.name}</div>
+                    <div>🏪 <strong>Buyer:</strong> ${o.buyer.name}</div>
+                    <div>📦 <strong>Quantity:</strong> ${o.quantity} kg</div>
+                    ${o.transporter ? `<div>🚚 <strong>Carrier:</strong> ${o.transporter.name} (${o.transporter.vehicleNumber || 'N/A'})</div>` : ''}
+                    ${o.deliveryFee ? `<div>💵 <strong>Delivery Fee:</strong> ₹${o.deliveryFee}</div>` : ''}
+                    <div>💳 <strong>Payment:</strong> ${o.paymentMode || 'Cash on Delivery'}</div>
+                  </div>
                 </div>
-                <h3 class="card-title">${o.product.name}</h3>
-                <div class="card-meta"><span>Qty: ${o.quantity} kg</span></div>
-                <div class="card-price">₹${o.totalPrice}</div>
-                ${user.role === 'FARMER' && o.status !== 'DELIVERED' ? `
-                  <div style="margin-top:0.75rem;">
-                    <select id="status-${o.id}" style="width:100%;padding:0.6rem;border-radius:8px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);margin-bottom:0.5rem;font-family:Inter,sans-serif;">
-                      <option value="ACCEPTED" ${o.status==='ACCEPTED'?'selected':''}>✅ Accept</option>
-                      <option value="SHIPPED" ${o.status==='SHIPPED'?'selected':''}>🚚 Ship</option>
-                      <option value="DELIVERED" ${o.status==='DELIVERED'?'selected':''}>📦 Delivered</option>
-                    </select>
-                    <button class="btn btn-sm" style="width:100%;" onclick="updateOrder(${o.id})">Update Status</button>
-                  </div>` : ''}
+                <div style="margin-top:auto;">
+                  <div class="card-price" style="font-size:1.25rem; font-weight:800; color:var(--green-primary); margin-bottom:0.75rem;">₹${o.totalPrice}</div>
+                  ${actionHtml}
+                  <button class="btn btn-sm btn-secondary" onclick='downloadInvoicePDF(${orderJson})' style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.25rem; font-weight:600; margin-top:0.25rem;">
+                    📥 Download Invoice (PDF)
+                  </button>
+                </div>
               </div>
             </div>`;
         }).join('');
@@ -460,6 +569,34 @@
     }
 
     // ── Transporter UI Functions ─────────────────────────────────────────────────────
+    async function loadVehicleProfile() {
+      if (user.vehicleType) document.getElementById('vehicle-type').value = user.vehicleType;
+      if (user.vehicleNumber) document.getElementById('vehicle-number').value = user.vehicleNumber;
+      if (user.vehicleCapacity) document.getElementById('vehicle-capacity').value = user.vehicleCapacity;
+    }
+
+    async function saveVehicleProfile() {
+      try {
+        const vehicleData = {
+          vehicleType: document.getElementById('vehicle-type').value,
+          vehicleNumber: document.getElementById('vehicle-number').value.trim(),
+          vehicleCapacity: document.getElementById('vehicle-capacity').value ? parseFloat(document.getElementById('vehicle-capacity').value) : null
+        };
+        if (!vehicleData.vehicleNumber) {
+          showToast("Vehicle License Plate number is required", "error");
+          return;
+        }
+        const updatedUser = await api.updateVehicleProfile(user.id, vehicleData);
+        user.vehicleType = updatedUser.vehicleType;
+        user.vehicleNumber = updatedUser.vehicleNumber;
+        user.vehicleCapacity = updatedUser.vehicleCapacity;
+        localStorage.setItem('user', JSON.stringify(user));
+        showToast("Vehicle carrier profile updated successfully!");
+      } catch (e) {
+        showToast(e.message, "error");
+      }
+    }
+
     async function loadAvailableDeliveries() {
       try {
         const deliveries = await api.getAvailableDeliveries();
@@ -486,12 +623,47 @@
                 </div>
                 <div>
                   <div style="font-size:1.25rem; font-weight:800; color:var(--green-primary); margin-bottom:0.75rem;">₹${d.totalPrice}</div>
-                  <button class="btn btn-sm" style="width:100%; font-weight:600;" onclick="claimDelivery(${d.id})">🚚 Claim Delivery</button>
+                  <button class="btn btn-sm" style="width:100%; font-weight:600;" onclick="openSubmitBidModal(${d.id})">💸 Submit Delivery Quote</button>
                 </div>
               </div>
             </div>`;
         }).join('');
       } catch(e) { console.error(e); }
+    }
+
+    async function loadMyBids() {
+      try {
+        const bids = await api.getBidsByTransporter(user.id);
+        const grid = document.getElementById('my-bids-grid');
+        if (bids.length === 0) {
+          grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem;">You have not placed any bids yet.</p>';
+          return;
+        }
+        grid.innerHTML = bids.map(b => {
+          const statusTag = { PENDING: 'tag-amber', ACCEPTED: 'tag-green', REJECTED: 'tag-red' }[b.status] || 'tag-amber';
+          return `
+            <div class="card" style="border: 1px solid var(--border); background: var(--bg-elevated); padding: 1.25rem;">
+              <div class="card-body" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                <div>
+                  <div style="display:flex; justify-content:between; align-items:center; margin-bottom:0.75rem;">
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Bid ID: #${b.id} (Order #${b.order.id})</span>
+                    <span class="tag ${statusTag}">${b.status}</span>
+                  </div>
+                  <h3 class="card-title" style="margin-bottom:0.5rem; font-size:1.1rem; font-weight:700;">${getCategoryEmoji(b.order.product.category)} ${b.order.product.name}</h3>
+                  <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.4;">
+                    <div>🌾 <strong>Farmer:</strong> ${b.order.product.farmer.name}</div>
+                    <div>🏪 <strong>Buyer:</strong> ${b.order.buyer.name}</div>
+                    <div>📦 <strong>Quantity:</strong> ${b.order.quantity} kg</div>
+                    <div>⏱️ <strong>Est. Transit Time:</strong> ${b.estimatedDeliveryTime || 'N/A'}</div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:1.25rem; font-weight:800; color:var(--green-primary); margin-bottom:0.5rem;">Quote: ₹${b.bidAmount}</div>
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+      } catch (e) { console.error(e); }
     }
 
     async function loadMyDeliveries() {
@@ -505,13 +677,14 @@
         grid.innerHTML = myOrders.map(o => {
           const statusTag = o.status === 'DELIVERED' ? 'tag-green' : 'tag-blue';
           const isDelivered = o.status === 'DELIVERED';
+          const orderJson = JSON.stringify(o).replace(/'/g, "\\'");
           return `
             <div class="card" style="border: 1px solid ${isDelivered ? 'var(--border)' : 'var(--green-primary)'}; background: var(--bg-elevated); padding: 1.25rem;">
               <div class="card-body" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
                 <div>
                   <div style="display:flex; justify-content:between; align-items:center; margin-bottom:0.75rem;">
                     <span style="font-size:0.8rem; color:var(--text-muted);">Order #${o.id}</span>
-                    <span class="tag ${statusTag}" style="margin-left:auto;">${o.status === 'SHIPPED' ? 'In Transit' : o.status}</span>
+                    <span class="tag ${statusTag}">${o.status === 'SHIPPED' ? 'In Transit' : o.status}</span>
                   </div>
                   <h3 class="card-title" style="margin-bottom:0.5rem; font-size:1.1rem; font-weight:700;">${getCategoryEmoji(o.product.category)} ${o.product.name}</h3>
                   <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.4;">
@@ -535,13 +708,16 @@
                         <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Current Location</label>
                         <input type="text" id="delivery-loc-${o.id}" placeholder="e.g. Near highway toll, Punjab" value="${o.transporterLocation || ''}" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem;">
                       </div>
-                      <button class="btn btn-sm" style="width:100%; font-weight:600;" onclick="updateDelivery(${o.id})">💾 Save Updates</button>
+                      <button class="btn btn-sm" style="width:100%; font-weight:600; margin-bottom:0.5rem;" onclick="updateDelivery(${o.id})">💾 Save Updates</button>
                     </div>
                   ` : `
-                    <div style="margin-top:0.5rem; text-align:center; color:var(--text-muted); font-size:0.85rem; padding-top:0.5rem; border-top:1px solid var(--border);">
+                    <div style="margin-top:0.5rem; text-align:center; color:var(--text-muted); font-size:0.85rem; padding-top:0.5rem; border-top:1px solid var(--border); margin-bottom:0.5rem;">
                       ✅ Delivery completed successfully!
                     </div>
                   `}
+                  <button class="btn btn-sm btn-secondary" onclick='downloadInvoicePDF(${orderJson})' style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.25rem; font-weight:600;">
+                    📥 Download Invoice (PDF)
+                  </button>
                 </div>
               </div>
             </div>`;
@@ -549,14 +725,36 @@
       } catch(e) { console.error(e); }
     }
 
-    async function claimDelivery(orderId) {
+    function openSubmitBidModal(orderId) {
+      if (!user.vehicleNumber) {
+        showToast("Please update your Carrier Vehicle Profile first before placing bids!", "error");
+        return;
+      }
+      document.getElementById('bid-order-id').value = orderId;
+      document.getElementById('bid-amount').value = '';
+      document.getElementById('bid-est-time').value = '';
+      document.getElementById('submit-bid-modal').classList.remove('hidden');
+    }
+
+    async function submitBidQuote() {
       try {
-        await api.assignTransporter(orderId, user.id);
-        showToast('Delivery claimed successfully!');
+        const bidData = {
+          orderId: parseInt(document.getElementById('bid-order-id').value),
+          transporterId: user.id,
+          bidAmount: parseFloat(document.getElementById('bid-amount').value),
+          estimatedDeliveryTime: document.getElementById('bid-est-time').value.trim()
+        };
+        if (!bidData.bidAmount || !bidData.estimatedDeliveryTime) {
+          showToast("Please fill all fields to place a bid", "error");
+          return;
+        }
+        await api.submitDeliveryBid(bidData);
+        showToast("Your delivery quote has been published successfully!");
+        document.getElementById('submit-bid-modal').classList.add('hidden');
         loadAvailableDeliveries();
-        loadMyDeliveries();
-      } catch(e) {
-        showToast(e.message, 'error');
+        loadMyBids();
+      } catch (e) {
+        showToast(e.message, "error");
       }
     }
 
@@ -601,7 +799,9 @@
       } else if (tabName === 'transporter') {
         document.getElementById('transporter-view').style.display = '';
         document.getElementById('transporter-dashboard-link').classList.add('active');
+        loadVehicleProfile();
         loadAvailableDeliveries();
+        loadMyBids();
         loadMyDeliveries();
       }
     }
@@ -747,6 +947,181 @@
         }
         loadSubscriptions();
       } catch (e) { showToast(e.message, "error"); }
+    }
+
+    async function openViewBidsModal(orderId) {
+      try {
+        const bids = await api.getBidsForOrder(orderId);
+        const container = document.getElementById('bids-list-container');
+        document.getElementById('view-bids-modal').classList.remove('hidden');
+        
+        if (bids.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No logistics quotes submitted for this shipment yet.</p>';
+          return;
+        }
+        
+        container.innerHTML = bids.map(b => {
+          return `
+            <div class="card" style="border: 1px solid var(--border); padding: 1rem; background: var(--bg-elevated); display: flex; flex-direction: column; gap: 0.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <h4 style="font-weight:700; font-size:0.95rem; margin-bottom:0.25rem;">🚚 ${b.transporter.name}</h4>
+                  <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.4;">
+                    <div>📞 <strong>Phone:</strong> ${b.transporter.phone || 'N/A'}</div>
+                    <div>🚛 <strong>Carrier:</strong> ${b.transporter.vehicleType || 'N/A'} (${b.transporter.vehicleNumber || 'N/A'})</div>
+                    <div>⏱️ <strong>transit:</strong> ${b.estimatedDeliveryTime}</div>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:1.15rem; font-weight:800; color:var(--green-primary);">₹${b.bidAmount}</div>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-success" style="width:100%; margin-top:0.5rem; font-weight:600;" onclick="acceptBidQuote(${b.id})">
+                🤝 Accept Quote & Assign Carrier
+              </button>
+            </div>`;
+        }).join('');
+      } catch (e) {
+        showToast(e.message, "error");
+      }
+    }
+
+    async function acceptBidQuote(bidId) {
+      try {
+        await api.acceptDeliveryBid(bidId);
+        showToast("Logistics quote accepted! Shipment is now In Transit.");
+        document.getElementById('view-bids-modal').classList.add('hidden');
+        loadOrders();
+      } catch (e) {
+        showToast(e.message, "error");
+      }
+    }
+
+    async function markOrderDeliveredDirectly(orderId) {
+      try {
+        await api.updateOrderStatus(orderId, 'DELIVERED');
+        showToast("Order status updated to Delivered successfully!");
+        loadOrders();
+      } catch (e) {
+        showToast(e.message, "error");
+      }
+    }
+
+    function downloadInvoicePDF(order) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      const primaryColor = [22, 163, 74]; // premium green theme
+      
+      // 1. Header Section
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("🌾 Agro Linken Smart Ecosystem", 15, 18);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text("Agricultural Direct Supply Chain Management System", 15, 26);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("TAX INVOICE", 150, 18);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(`Order ID: #${order.id}`, 150, 26);
+      doc.text(`Date/Time: ${new Date(order.createdAt).toLocaleString()}`, 150, 32);
+
+      // 2. Actors Details Section (Farmers, Buyer, Transporter)
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      
+      // Column 1: Farmer Info
+      doc.text("🌾 FARMER DETAILS", 15, 55);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(`Name: ${order.product.farmer.name || 'N/A'}`, 15, 61);
+      doc.text(`Phone: ${order.product.farmer.phone || 'N/A'}`, 15, 66);
+      doc.text(`Location: ${order.product.farmer.location || 'N/A'}`, 15, 71);
+      
+      // Column 2: Shop Owner Info
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("🏪 RETAILER / SHOP DETAILS", 110, 55);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(`Buyer Name: ${order.buyer.name || 'N/A'}`, 110, 61);
+      doc.text(`Shop Name: ${order.buyer.shopName || 'N/A'}`, 110, 66);
+      doc.text(`Delivery Location: ${order.buyer.location || 'N/A'}`, 110, 71);
+      doc.text(`Phone: ${order.buyer.phone || 'N/A'}`, 110, 76);
+
+      // Column 1 (below): Transporter Info
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("🚚 LOGISTICS CARRIER DETAILS", 15, 88);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      if (order.transporter) {
+        doc.text(`Agent Name: ${order.transporter.name || 'N/A'}`, 15, 94);
+        doc.text(`Agent Phone: ${order.transporter.phone || 'N/A'}`, 15, 99);
+        doc.text(`Vehicle Capacity: ${order.transporter.vehicleCapacity ? order.transporter.vehicleCapacity + ' kg' : 'N/A'}`, 15, 104);
+        doc.text(`Vehicle Details: ${order.transporter.vehicleType || 'N/A'} (${order.transporter.vehicleNumber || 'N/A'})`, 15, 109);
+      } else {
+        doc.text("Logistics Transport Agent: Pending Assignment", 15, 94);
+      }
+      
+      // 3. Product Details Table using jsPDF AutoTable
+      const tableColumns = ["Item / Product ID", "Description", "Category", "Quantity", "Rate (₹/kg)", "Subtotal"];
+      const tableRows = [
+        [
+          `PROD-${order.product.id}`,
+          order.product.name,
+          order.product.category,
+          `${order.quantity} kg`,
+          `₹${order.product.price.toFixed(2)}`,
+          `₹${order.totalPrice.toFixed(2)}`
+        ]
+      ];
+      
+      doc.autoTable({
+        startY: 118,
+        head: [tableColumns],
+        body: tableRows,
+        theme: 'grid',
+        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+        styles: { fontSize: 9 }
+      });
+      
+      // 4. Financial Summary
+      const finalY = doc.lastAutoTable.finalY + 12;
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text("Crop cost subtotal:", 120, finalY);
+      doc.text(`₹${order.totalPrice.toFixed(2)}`, 175, finalY, { align: "right" });
+      
+      doc.text("Shipping & Delivery Fee:", 120, finalY + 6);
+      doc.text(`₹${(order.deliveryFee || 0.0).toFixed(2)}`, 175, finalY + 6, { align: "right" });
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("TOTAL COD OUTSTANDING:", 120, finalY + 14);
+      doc.text(`₹${(order.totalPrice + (order.deliveryFee || 0.0)).toFixed(2)}`, 175, finalY + 14, { align: "right" });
+      
+      // 5. Payment details and signature section
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(`PAYMENT MODE: ${order.paymentMode || 'Cash on Delivery'}`, 15, finalY + 14);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text("Note: Cash on Delivery payment is outstanding. Please collect full invoice amount on receipt of goods.", 15, finalY + 28);
+      doc.text("Thank you for using Agro Linken – Direct Linkage System.", 15, finalY + 34);
+      
+      // Save the PDF
+      doc.save(`AgroLinken_Invoice_Order_${order.id}.pdf`);
     }
 
     function getCategoryEmoji(cat) {
