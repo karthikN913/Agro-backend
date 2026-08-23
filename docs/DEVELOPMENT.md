@@ -1,27 +1,22 @@
-# Agro Linken Smart Ecosystem — Development & Implementation Summary
+# Agro Linken — Development & Implementation Log
 
-> This document provides a comprehensive overview of the design architecture, completed implementation phases, database model enhancements, and optimization efforts executed on the **Agro Linken** platform.
-> 
-> For the full system architecture diagram, see [`docs/architecture/ARCHITECTURE.md`](../architecture/ARCHITECTURE.md).  
-> For the REST API reference, see [`docs/api/API.md`](../api/API.md).
+This document summarizes the development history, architectural design, database model enhancements, and performance optimizations made during the construction of the Agro Linken platform.
 
 ---
 
-## 🏗️ System Architecture
+## Architecture Overview
 
-The Agro Linken platform is built as a split-client architecture containing a performant Java Spring Boot backend and an elegant, dependency-free vanilla HTML5/CSS3/JavaScript frontend.
+Agro Linken uses a split-client architecture: a standalone Java Spring Boot REST API backend and a Vanilla HTML5/CSS3/JavaScript frontend.
 
 ```mermaid
 graph TD
-    %% Frontend Components %%
     subgraph Frontend [Client Browser]
-        UI[HTML5 / CSS3 Dark Mode UI]
+        UI[HTML5 / CSS3 UI]
         JS[api.js Client API Wrapper]
         FB_SDK[Firebase Web SDK]
         PDF[jsPDF Client Invoicing]
     end
 
-    %% Backend Components %%
     subgraph Backend [Spring Boot Web Server]
         Controller[REST Controllers]
         WS[WebSocket STOMP Server]
@@ -29,17 +24,13 @@ graph TD
         Repo[JPA Repositories]
     end
 
-    %% Database & External Services %%
     Database[(PostgreSQL Database)]
-    Firebase[(Firebase Auth Console)]
-    Wiki[Wikipedia Image API]
+    Firebase[(Firebase Auth)]
 
-    %% Interactions %%
     UI -->|Uses| JS
     JS -->|Bearer JWT Header| Controller
     JS -->|Real-time Socket| WS
     FB_SDK -->|Auth Requests| Firebase
-    JS -->|Fallback Images| Wiki
     
     Controller -->|Verify Token| FB_Admin
     Controller -->|Query / Save| Repo
@@ -49,67 +40,46 @@ graph TD
 
 ---
 
-## 📅 Chronological Development Phases
+## Development History
 
-| Phase / Focus | Key Accomplishments | Impact & Benefits |
-| :--- | :--- | :--- |
-| **Phase 1: Foundation & Roles** | Created `Review` and `Notification` entities. Expanded `User` roles from simple Buyers and Farmers to include Administrators and Transporters. | Established the data schema foundation and role-based access control. |
-| **Phase 2: WebSocket & Forums** | Configured STOMP WebSocket endpoints (`/ws-chat`), WebSocket controllers, and created database mappings for the community forum. | Enabled true real-time communication between users without page refreshes. |
-| **Phase 3: UI Overhaul & Dark Mode** | Overhauled all HTML files to a premium dark-mode sidebar layout. Implemented interactive feeds for Schemes, Reviews, and WebSocket Chat. | Transformed the app from a simple prototype into a modern, production-grade interface. |
-| **Phase 4: Ledgers & Subscriptions** | Implemented the digital Credit Ledger (`CreditRecord`) and dynamic Crop Price Subscription Alerts (`CropSubscription`). | Provided farmers with direct access to credit booking and real-time market notifications. |
-| **Phase 5: Transporter Logistics** | Created the bidding system (`DeliveryBid`), transporter profile setups, Cash-on-Delivery payment options, and client-side PDF tax invoice generation. | Provided a complete supply-chain circle connecting farmers, transporters, and buyers. |
-| **Performance & Stability** | Migrated DB to PostgreSQL. Optimized indexes, converted in-memory queries to SQL, resolved N+1 query loops, and resolved Render free-tier cold-starts. | Reduced page load times, resolved backend crashes, and secured high Render hosting stability. |
-
----
-
-## 🛠️ Detailed Component Overhaul
-
-### 1. Spring Boot Backend Services
-* **WebSocket Integration**: Configured `WebSocketConfig.java` to support standard STOMP endpoints on `/ws-chat`, allowing `ChatController.java` to handle `/app/chat.sendMessage` mappings.
-* **Firebase Admin Integration**: Configured `FirebaseConfig.java` to dynamically load private key configurations (`serviceAccountKey.json` or `FIREBASE_CREDENTIALS` env variable) to authenticate tokens.
-* **Digital Udhar (Credit) Book**: Created `CreditController.java` and `CreditRecord.java` to track pending user credit, providing full transaction history and balances.
-* **Auto-Healing Authentication**: Added logic to `UserController.java` that automatically links a Firebase user with an existing local database record by email, and extracts custom names from the email prefix if the profile name is blank.
-* **DB Constraint Correction**: Added SQL runtimes to drop stale DB constraints (such as `users_role_check`) to permit role migrations dynamically on database restart.
-
-### 2. Frontend Overhaul (Vanilla HTML5 / CSS3 / JS)
-* **Premium Dark Mode System**: Created global variables in `styles/main.css` implementing beautiful gradients, card designs, responsive sidebars, status chips, and smooth hover micro-animations.
-* **Dynamic AI-Driven Images**: Integrated Wikipedia API image fetching into `api.js`. The marketplace queries Wikipedia for crop definitions (e.g., "Tomato") and falls back to Unsplash photo cards, completely removing plain text/emoji placeholders.
-* **PDF Bill Generator**: Integrated `jspdf` into `dashboard.html` allowing Buyers and Farmers to download structured tax invoices containing buyer/farmer details, transaction tables, and grand totals directly from their browser.
-* **Transporter Logistics Bidding**: Created vehicle profiles, bid grids, and dynamic action buttons so transporters can view shipments, bid on shipments, and track accepted trips.
-
-### 3. Database Schema (PostgreSQL)
-Below is the structural breakdown of the enhanced relational schema:
-
-```
-[User] ──(1)─────────────(N)── [Product] ──(1)───────────(N)── [Review]
-  │                                │
- (1)                              (1)
-  │                                │
- (N)                              (N)
-[CreditRecord]                 [Order] ──(1)─────────────(N)── [DeliveryBid]
-```
-
-* **`users` Table**: Optimized with indexes on `firebase_uid`, `email`, and `phone` for sub-millisecond session authentication.
-* **`orders` Table**: Expanded to map delivery statuses (`PENDING`, `ACCEPTED`, `SHIPPED`, `DELIVERED`), store final payment methods (Cash on Delivery), and log active transporter locations.
-* **`delivery_bids` Table**: Logs the transporter ID, order ID, bid amount, delivery timeline estimate, and approval status (`PENDING`, `ACCEPTED`, `REJECTED`).
+| Phase / Focus | Key Changes | Purpose |
+|---|---|---|
+| **Phase 1: Domain Entities & Roles** | Created `Review` and `Notification` entities. Expanded user roles (`FARMER`, `BUYER`, `SHOP_OWNER`, `TRANSPORTER`, `ADMIN`). | Define core domain schema and role model. |
+| **Phase 2: WebSocket Messaging** | Implemented STOMP WebSocket endpoints (`/ws-chat`), `ChatController`, and `Message` database entity. | Enable real-time peer-to-peer messaging between buyers, farmers, and transporters. |
+| **Phase 3: Frontend Layout Overhaul** | Redesigned frontend to a dark-theme dashboard layout with responsive sidebars and structured views for all roles. | Improve user navigation and multi-role UX. |
+| **Phase 4: Ledgers & Subscriptions** | Implemented digital Credit Ledger (`CreditRecord`) and dynamic Crop Price Alert subscriptions (`CropSubscription`). | Allow tracking of rural credit transactions and user alerts for produce categories. |
+| **Phase 5: Logistics Bidding** | Implemented transporter bidding system (`DeliveryBid`), vehicle profile attributes, and client-side PDF tax invoice generation. | Complete logistics workflow connecting farmers, transporters, and buyers. |
+| **Database & Deployment** | Migrated from H2 in-memory DB to PostgreSQL. Configured Docker build and memory tuning for Render deployment. | Move to persistent relational storage and cloud hosting. |
 
 ---
 
-## ⚡ Performance Optimizations
+## Backend Implementation Details
 
-To address lag, query overhead, and hosting restrictions, the following optimization measures were deployed:
+### 1. WebSocket Integration
+- `WebSocketConfig.java` registers standard STOMP endpoints on `/ws-chat`.
+- `ChatController.java` routes messages from `/app/chat.sendMessage` to subscriber topics `/topic/messages/{roomId}` and persists chat history into PostgreSQL via `MessageRepository`.
 
-1. **JPA Query Optimization**:
-   * Replaced Java Stream filtering in controllers with native database-level filters in `ProductRepository.java` using `@Query` containing conditional `NULL` checks.
-2. **N+1 SQL Queries Resolved**:
-   * Created a single aggregation endpoint `GET /api/reviews/summaries` that calculates average ratings and counts in one database request (`AVG(rating)` and `COUNT(r)`) grouped by product ID, rather than fetching reviews individually for every item on page load.
-3. **Transactional Batch Operations**:
-   * Annotated critical routes with `@Transactional`.
-   * Swapped sequential loop saves (`.save()`) with single batch collection operations (`.saveAll()`) for transporter bidding rejections and crop notification dispatching.
-4. **Debounced Search Inputs**:
-   * Implemented a `debounce` helper (250ms delay) on search inputs in `marketplace.html` to eliminate excessive rendering loops during fast keystrokes.
-5. **Render Deployment Stability**:
-   * Created a custom `.dockerignore` to reduce compilation overhead.
-   * Configured Docker JVM flags (`-Xmx350m`) to prevent container termination due to memory limit violations on free-tier Render plans.
-6. **Network Reliability & Retries**:
-   * Wrote a custom `fetchWithRetry` wrapper inside `api.js` using exponential backoff to handle Render free-tier server cold-starts, retrying 500/502/503/504 timeout codes up to 5 times.
+### 2. Authentication & Auto-Registration
+- `UserController.java` verifies incoming Firebase JWT tokens on protected routes via Firebase Admin SDK.
+- To handle user creation seamlessly upon first sign-in, auto-registration logic creates a local database record if the Firebase UID or email is not yet registered.
+
+### 3. PostgreSQL Database Schema
+- **`users` Table**: Contains user profiles, roles, contact info, and transporter vehicle specs (`vehicle_type`, `vehicle_number`, `vehicle_capacity`).
+- **`products` Table**: Produce listings linked to a farmer `User`.
+- **`orders` Table**: Manages status lifecycle (`PENDING` → `ACCEPTED` → `SHIPPED` → `DELIVERED`), assigned transporter ID, payment mode, and location tracking strings.
+- **`delivery_bids` Table**: Tracks freight quotes submitted by transporters for orders, including bid amount and estimated transit time.
+- **`credit_records` Table**: Maintains Udhar credit balances (credit purchases vs repayments) for farmers and shop owners.
+
+---
+
+## Performance & Optimization Notes
+
+1. **Database Querying**:
+   - Replaced in-memory stream filtering with database-level query parameters in `ProductRepository` using custom JPQL queries with null checks (`:query IS NULL OR LOWER(p.name) LIKE ...`).
+   - Grouped review statistics into a single SQL query (`GET /api/reviews/summaries`) returning `AVG(rating)` and `COUNT(r)` by product ID.
+
+2. **Network Resilience**:
+   - Implemented an automatic retry wrapper (`fetchWithRetry`) in `api.js` using exponential backoff to handle Render free-tier cold-start latencies gracefully.
+
+3. **Deployment Memory Constraints**:
+   - Configured Docker execution with JVM heap limits (`-Xmx350m -Xms256m`) to ensure execution within Render's free tier memory bounds.
