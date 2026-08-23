@@ -6,10 +6,37 @@
   <title>Agro Linken – Smart Agricultural Ecosystem</title>
   <meta name="description" content="Connect farmers, buyers, and transporters on India's smartest agricultural platform.">
   <link rel="stylesheet" href="styles/main.css">
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
   <header>
-    <div class="logo">🌾 Agro<span>Linken</span></div>
+    <div class="logo notranslate">🌾 Agro<span>Linken</span></div>
+    <nav>
+      <select class="lang-selector notranslate" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+        <option value="bn">বাংলা (Bengali)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="mr">मराठी (Marathi)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="ur">اردو (Urdu)</option>
+        <option value="gu">ગુજરાતી (Gujarati)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="as">অসমীয়া (Assamese)</option>
+        <option value="mai">मैथिली (Maithili)</option>
+        <option value="gom">कोंकणी (Konkani)</option>
+        <option value="sa">संस्कृतम् (Sanskrit)</option>
+      </select>
+      <div id="google_translate_element" style="display:none;"></div>
+    </nav>
   </header>
 
   <div class="auth-page">
@@ -17,51 +44,66 @@
       <!-- Left Hero Panel -->
       <div class="auth-hero">
         <div class="auth-hero-icon">🌱</div>
-        <h1>India's Smart Agricultural Ecosystem</h1>
-        <p>Directly connecting farmers, buyers, shop owners, and transporters to build a transparent and profitable rural economy.</p>
+        <h1 data-i18n="hero_title">India's Smart Agricultural Ecosystem</h1>
+        <p data-i18n="hero_sub">Directly connecting farmers, buyers, shop owners, and transporters to build a transparent and profitable rural economy.</p>
         <div class="auth-features">
-          <div class="auth-feature"><span class="auth-feature-icon">🤝</span> Direct farmer-to-buyer trade</div>
-          <div class="auth-feature"><span class="auth-feature-icon">💬</span> Real-time messaging & community</div>
-          <div class="auth-feature"><span class="auth-feature-icon">📦</span> Smart inventory management</div>
-          <div class="auth-feature"><span class="auth-feature-icon">🏛️</span> Government schemes & subsidies</div>
-          <div class="auth-feature"><span class="auth-feature-icon">🚚</span> Integrated logistics network</div>
+          <div class="auth-feature">
+            <svg class="auth-feature-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Direct farmer-to-buyer trade
+          </div>
+          <div class="auth-feature">
+            <svg class="auth-feature-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Real-time messaging & community
+          </div>
+          <div class="auth-feature">
+            <svg class="auth-feature-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            Smart inventory management
+          </div>
+          <div class="auth-feature">
+            <svg class="auth-feature-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><path d="M12 2L2 7l10 5 10-5-10-5z"></path></svg>
+            Government schemes & subsidies
+          </div>
+          <div class="auth-feature">
+            <svg class="auth-feature-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            Integrated logistics network
+          </div>
         </div>
       </div>
 
       <!-- Right Form Panel -->
       <div class="auth-form-section">
         <!-- LOGIN FORM -->
-        <div id="login-form">
+        <form id="login-form" onsubmit="event.preventDefault(); handleLogin();">
           <h2>Welcome back</h2>
           <p>Login to continue to your dashboard</p>
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
+            <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required>
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
           </div>
-          <button class="btn" id="login-btn" onclick="handleLogin()">🔐 Login to Dashboard</button>
+          <button type="submit" class="btn" id="login-btn">🔐 Login to Dashboard</button>
           <div class="auth-divider">or</div>
-          <button class="btn btn-google" onclick="handleGoogleLogin()">
+          <button type="button" class="btn btn-google" onclick="handleGoogleLogin()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;" alt="Google">
             Continue with Google
           </button>
           <p class="auth-switch">Don't have an account? <a href="#" onclick="toggleAuth()">Register here</a></p>
-        </div>
+        </form>
 
         <!-- REGISTER FORM -->
-        <div id="register-form" class="hidden">
+        <form id="register-form" class="hidden" onsubmit="event.preventDefault(); handleRegister();">
           <h2>Create an account</h2>
           <p>Join thousands of farmers and buyers</p>
           <div class="form-group">
             <label>Full Name</label>
-            <input type="text" id="reg-name" placeholder="Your full name">
+            <input type="text" id="reg-name" placeholder="Your full name" required>
           </div>
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" id="reg-email" placeholder="you@example.com">
+            <input type="email" id="reg-email" placeholder="you@example.com" required>
           </div>
           <div class="form-group">
             <label>Phone Number (Optional)</label>
@@ -69,7 +111,7 @@
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" id="reg-password" placeholder="Create a strong password">
+            <input type="password" id="reg-password" placeholder="Create a strong password" required>
           </div>
           <div class="form-group">
             <label>I am a...</label>
@@ -82,20 +124,20 @@
           </div>
           <div class="form-group">
             <label>Village / Location</label>
-            <input type="text" id="reg-location" placeholder="Your village or city">
+            <input type="text" id="reg-location" placeholder="Your village or city" required>
           </div>
           <div class="form-group hidden" id="shop-name-group">
             <label>Shop Name</label>
             <input type="text" id="reg-shop-name" placeholder="Your shop name">
           </div>
-          <button class="btn" id="register-btn" onclick="handleRegister()">🚀 Create My Account</button>
+          <button type="submit" class="btn" id="register-btn">🚀 Create My Account</button>
           <div class="auth-divider">or</div>
-          <button class="btn btn-google" onclick="handleGoogleRegister()">
+          <button type="button" class="btn btn-google" onclick="handleGoogleRegister()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;" alt="Google">
             Register with Google
           </button>
           <p class="auth-switch">Already have an account? <a href="#" onclick="toggleAuth()">Login here</a></p>
-        </div>
+        </form>
       </div>
     </div>
   </div>
@@ -107,18 +149,26 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
   <script>
+    // Firebase Client Configuration
+    // Replace with your project's Firebase Web SDK config from Firebase Console
     const firebaseConfig = {
-      apiKey: "AIzaSyAnsWq6UaHQQc-603IW2jD0hSrFZnpupfE",
-      authDomain: "agro-linken.firebaseapp.com",
-      projectId: "agro-linken",
-      storageBucket: "agro-linken.firebasestorage.app",
-      messagingSenderId: "610365989044",
-      appId: "1:610365989044:web:daad77a68f78e852e777e1",
-      measurementId: "G-EZT1TN39PL"
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "YOUR_MEASUREMENT_ID"
     };
     firebase.initializeApp(firebaseConfig);
   </script>
   <script src="scripts/api.js"></script>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'hi,bn,te,mr,ta,ur,gu,kn,ml,or,pa,as,mai,gom,sa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script>
     if (getCurrentUser()) window.location.href = 'dashboard.html';
 
@@ -133,8 +183,18 @@
 
     function setLoading(btnId, loading) {
       const btn = document.getElementById(btnId);
+      if (!btn) return;
       btn.disabled = loading;
       btn.style.opacity = loading ? '0.7' : '1';
+      if (loading) {
+        btn.setAttribute('data-original-html', btn.innerHTML);
+        const spinner = '<svg class="spinner-icon" style="animation: spin 1s linear infinite; width:16px; height:16px; margin-right:8px; display:inline-block; vertical-align:middle;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25;"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        const loadingText = btnId === 'login-btn' ? 'Logging in (Waking up server)...' : 'Creating Account...';
+        btn.innerHTML = `${spinner} ${loadingText}`;
+      } else {
+        const orig = btn.getAttribute('data-original-html');
+        if (orig) btn.innerHTML = orig;
+      }
     }
 
     function toggleAuth() {

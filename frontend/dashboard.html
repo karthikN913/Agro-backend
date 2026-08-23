@@ -8,32 +8,51 @@
 </head>
 <body>
   <header>
-    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <a class="logo notranslate" href="dashboard.html">🌾 Agro<span>Linken</span></a>
     <nav>
-      <a href="dashboard.html" class="active">📊 Dashboard</a>
-      <a href="marketplace.html">🛍️ Marketplace</a>
-      <a href="community.html">💬 Community</a>
-      <a href="schemes.html">🏛️ Schemes</a>
-      <a href="#" onclick="logout()">🚪 Logout</a>
+      <a href="dashboard.html" class="active" data-i18n="nav_dashboard">📊 Dashboard</a>
+      <a href="marketplace.html" data-i18n="nav_marketplace">🛍️ Marketplace</a>
+      <a href="community.html" data-i18n="nav_community">💬 Community</a>
+      <a href="schemes.html" data-i18n="nav_schemes">🏛️ Schemes</a>
+      <a href="#" onclick="logout()" data-i18n="nav_logout">🚪 Logout</a>
+      <select class="lang-selector notranslate" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+        <option value="bn">বাংলা (Bengali)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="mr">मराठी (Marathi)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="ur">اردو (Urdu)</option>
+        <option value="gu">ગુજરાતી (Gujarati)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="as">অসমীয়া (Assamese)</option>
+        <option value="mai">मैथिली (Maithili)</option>
+        <option value="gom">कोंकणी (Konkani)</option>
+        <option value="sa">संस्कृतम् (Sanskrit)</option>
+      </select>
+      <div id="google_translate_element" style="display:none;"></div>
     </nav>
   </header>
 
   <div class="dashboard-layout">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <div id="user-profile-sidebar" style="text-align:center; padding:1rem 0 1.5rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
-        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--green-dark),#166534);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 0.75rem;">👤</div>
-        <div id="sidebar-name" style="font-weight:700;font-size:0.95rem;"></div>
-        <div id="sidebar-role" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;"></div>
+      <div id="user-profile-sidebar" class="sidebar-profile">
+        <div class="sidebar-avatar">👤</div>
+        <div id="sidebar-name" class="sidebar-name"></div>
+        <div id="sidebar-role" class="sidebar-role"></div>
       </div>
 
       <div class="sidebar-section">
         <div class="sidebar-label">Main</div>
-        <a href="#" class="sidebar-link active" id="dashboard-main-link" onclick="switchTab('dashboard')"><span class="icon">📊</span> Dashboard</a>
-        <a href="marketplace.html" class="sidebar-link"><span class="icon">🛍️</span> Marketplace</a>
-        <a href="chat.html" class="sidebar-link"><span class="icon">💬</span> Messages</a>
-        <a href="community.html" class="sidebar-link"><span class="icon">🌐</span> Community</a>
-        <a href="schemes.html" class="sidebar-link"><span class="icon">🏛️</span> Gov. Schemes</a>
+        <a href="#" class="sidebar-link active" id="dashboard-main-link" onclick="switchTab('dashboard')" data-i18n="nav_dashboard"><span class="icon">📊</span> Dashboard</a>
+        <a href="marketplace.html" class="sidebar-link" data-i18n="nav_marketplace"><span class="icon">🛍️</span> Marketplace</a>
+        <a href="chat.html" class="sidebar-link" data-i18n="nav_messages"><span class="icon">💬</span> Messages</a>
+        <a href="community.html" class="sidebar-link" data-i18n="nav_community"><span class="icon">🌐</span> Community</a>
+        <a href="schemes.html" class="sidebar-link" data-i18n="nav_schemes"><span class="icon">🏛️</span> Gov. Schemes</a>
       </div>
 
       <div class="sidebar-section" id="farmer-sidebar" style="display:none;">
@@ -80,6 +99,49 @@
           <button id="add-product-btn" class="btn btn-sm hidden" onclick="document.getElementById('add-product-modal').classList.remove('hidden')" style="width:auto;">
             ➕ Add Product
           </button>
+        </div>
+
+        <!-- Hero Image Banner — Indian Paddy Fields -->
+        <div class="page-hero-banner">
+          <img
+            src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1400&q=85"
+            alt="Indian Rice Paddy Fields"
+            loading="lazy"
+            onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=80'">
+          <div class="page-hero-banner-overlay">
+            <div class="page-hero-badge">🌾 Agro Linken · India</div>
+            <div class="page-hero-banner-title">Farmer's Strength, Nation's Prosperity</div>
+            <div class="page-hero-banner-sub">Farmer's strength, nation's prosperity — empowering 140M+ Indian farmers</div>
+          </div>
+        </div>
+
+        <!-- Indian Agriculture Showcase Row -->
+        <div class="market-image-row">
+          <div class="market-image-tile">
+            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" alt="Golden Wheat Field" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80'">
+            <div class="market-image-tile-label">🌾 Wheat Fields — Punjab</div>
+          </div>
+          <div class="market-image-tile">
+            <img src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=600&q=80" alt="Fresh Vegetables Market" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80'">
+            <div class="market-image-tile-label">🥦 Fresh Produce — Local Market</div>
+          </div>
+          <div class="market-image-tile">
+            <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80" alt="Indian Spices" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80'">
+            <div class="market-image-tile-label">🌶️ Indian Spices — Masala</div>
+          </div>
+        </div>
+
+        <!-- Farming Tip Card -->
+        <div class="farming-tip-card">
+          <img class="farming-tip-img"
+               src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=300&q=80"
+               alt="Indian Farmer in Field" loading="lazy"
+               onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80'">
+          <div class="farming-tip-body">
+            <div class="farming-tip-label">🌱 Daily Farming Tip</div>
+            <div class="farming-tip-title">Use Soil Health Cards for Better Yield</div>
+            <div class="farming-tip-text">Apply for a free Soil Health Card under the government scheme to get personalized fertilizer recommendations. Proper nutrient management can increase your crop yield by up to 20% while reducing input costs.</div>
+          </div>
         </div>
 
         <!-- Stats -->
@@ -175,24 +237,24 @@
         <!-- Ledger Stats -->
         <div class="stats-grid" style="margin-bottom:2rem;">
           <div class="stat-card">
-            <div class="stat-icon red" style="background:rgba(239, 68, 68, 0.1);">🔴</div>
+            <div class="stat-icon red">🔴</div>
             <div class="stat-info">
               <div class="stat-label">Net Outstanding Balance</div>
-              <div class="stat-value" id="ledger-net-outstanding" style="color:var(--red);">₹0.00</div>
+              <div class="stat-value color-red" id="ledger-net-outstanding">₹0.00</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon amber" style="background:rgba(245, 158, 11, 0.1);">🔶</div>
+            <div class="stat-icon amber">🔶</div>
             <div class="stat-info">
               <div class="stat-label">Total Credit Extended</div>
-              <div class="stat-value" id="ledger-total-extended" style="color:var(--amber);">₹0.00</div>
+              <div class="stat-value color-amber" id="ledger-total-extended">₹0.00</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon green" style="background:rgba(16, 185, 129, 0.1);">💚</div>
+            <div class="stat-icon green">💚</div>
             <div class="stat-info">
               <div class="stat-label">Total Repayments</div>
-              <div class="stat-value" id="ledger-total-repay" style="color:var(--green-primary);">₹0.00</div>
+              <div class="stat-value color-green" id="ledger-total-repay">₹0.00</div>
             </div>
           </div>
         </div>
@@ -200,16 +262,16 @@
         <!-- Ledger Splits -->
         <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:1.5rem;" class="responsive-split">
           <!-- Left: Recent Ledger log -->
-          <div class="card" style="padding:1.5rem;">
-            <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;">📜 Ledger Log History</h3>
+          <div class="card card-body">
+            <h3 class="card-header-line">📜 Ledger Log History</h3>
             <div style="max-height: 400px; overflow-y: auto;" id="ledger-log-container">
               <!-- Populate dynamically -->
             </div>
           </div>
 
           <!-- Right: Customer Balance Outstanding -->
-          <div class="card" style="padding:1.5rem;">
-            <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;">👥 Outstanding Customer List</h3>
+          <div class="card card-body">
+            <h3 class="card-header-line">👥 Outstanding Customer List</h3>
             <div style="max-height: 400px; overflow-y: auto;" id="ledger-customers-container">
               <!-- Populate dynamically -->
             </div>
@@ -235,20 +297,20 @@
       <div id="transporter-view" style="display:none; margin-bottom:2.5rem;">
         <div class="page-header">
           <div>
-            <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">🚚 Transporter Logistics Dashboard</h1>
-            <p style="color:var(--text-muted);">Manage deliveries – submit quotes for available shipments and track active assignments.</p>
+            <h1>🚚 Transporter Logistics Dashboard</h1>
+            <p>Manage deliveries – submit quotes for available shipments and track active assignments.</p>
           </div>
         </div>
-
+ 
         <!-- Vehicle Profile Registration Card -->
-        <div class="card" style="margin-bottom: 2rem; border: 1px solid var(--border); padding: 1.5rem;">
-          <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+        <div class="card card-body" style="margin-bottom: 2rem;">
+          <h3 class="card-header-line" style="display:flex; align-items:center; gap:0.5rem;">
             🚛 Vehicle Carrier Registration
           </h3>
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1rem;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
             <div class="form-group" style="margin-bottom:0;">
-              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Vehicle Type</label>
-              <select id="vehicle-type" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:inherit; font-size:0.85rem;">
+              <label>Vehicle Type</label>
+              <select id="vehicle-type">
                 <option value="Tractor">🚜 Tractor</option>
                 <option value="Mini Truck">🛺 Mini Truck / Chota Hathi</option>
                 <option value="Truck">🚚 Commercial Truck (Lorry)</option>
@@ -256,35 +318,29 @@
               </select>
             </div>
             <div class="form-group" style="margin-bottom:0;">
-              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Vehicle Number (Plate)</label>
-              <input type="text" id="vehicle-number" placeholder="e.g. KA-19-M-2023" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:inherit; font-size:0.85rem;">
+              <label>Vehicle Number (Plate)</label>
+              <input type="text" id="vehicle-number" placeholder="e.g. KA-19-M-2023">
             </div>
             <div class="form-group" style="margin-bottom:0;">
-              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Load Capacity (kg)</label>
-              <input type="number" id="vehicle-capacity" placeholder="e.g. 1500" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:inherit; font-size:0.85rem;">
+              <label>Load Capacity (kg)</label>
+              <input type="number" id="vehicle-capacity" placeholder="e.g. 1500">
             </div>
           </div>
-          <button class="btn btn-sm" onclick="saveVehicleProfile()" style="width:auto; padding:0.5rem 1.25rem; font-weight:600;">💾 Save Vehicle Profile</button>
+          <button class="btn btn-sm" onclick="saveVehicleProfile()" style="width:auto; font-weight:600;">💾 Save Vehicle Profile</button>
         </div>
-
+ 
         <div style="margin-bottom: 2rem;">
-          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
-            📥 Available Delivery Jobs
-          </h2>
+          <h2 class="section-header-line">📥 Available Delivery Jobs</h2>
           <div class="grid" id="available-deliveries-grid"></div>
         </div>
-
+ 
         <div style="margin-bottom: 2rem;">
-          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
-            ⏳ My Active Delivery Bids
-          </h2>
+          <h2 class="section-header-line">⏳ My Active Delivery Bids</h2>
           <div class="grid" id="my-bids-grid"></div>
         </div>
-
+ 
         <div>
-          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
-            📦 My Assigned Deliveries
-          </h2>
+          <h2 class="section-header-line">📦 My Assigned Deliveries</h2>
           <div class="grid" id="my-deliveries-grid"></div>
         </div>
       </div>
@@ -396,15 +452,50 @@
       <button class="btn btn-secondary" onclick="document.getElementById('view-bids-modal').classList.add('hidden')">Close</button>
     </div>
   </div>
+  <!-- Leave Review Modal -->
+  <div id="leave-review-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>⭐ Leave a Review</h3>
+        <button class="modal-close" onclick="document.getElementById('leave-review-modal').classList.add('hidden')">✕</button>
+      </div>
+      <input type="hidden" id="review-product-id">
+      <input type="hidden" id="review-order-id">
+      
+      <div class="form-group">
+        <label>Rating (1 to 5 Stars)</label>
+        <select id="review-rating" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-primary); font-size:1.1rem;">
+          <option value="5">⭐⭐⭐⭐⭐ (5/5) Excellent</option>
+          <option value="4">⭐⭐⭐⭐ (4/5) Very Good</option>
+          <option value="3">⭐⭐⭐ (3/5) Average</option>
+          <option value="2">⭐⭐ (2/5) Poor</option>
+          <option value="1">⭐ (1/5) Terrible</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Your Review / Comments</label>
+        <textarea id="review-comment" rows="3" placeholder="Tell us about the quality, freshness, or experience..." style="width:100%; padding:0.75rem 1rem; background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:Inter,sans-serif; resize:vertical; outline:none;"></textarea>
+      </div>
+      
+      <button class="btn" onclick="submitProductReview()" style="margin-top:1rem;">🚀 Submit Review</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('leave-review-modal').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
 
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
-
   <!-- jsPDF and AutoTable for dynamic PDF receipts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
   <script src="scripts/api.js"></script>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'hi,bn,te,mr,ta,ur,gu,kn,ml,or,pa,as,mai,gom,sa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script>
     const user = requireAuth();
 
@@ -447,16 +538,26 @@
       setTimeout(() => t.remove(), 4000);
     }
 
+    // Using global getProductImage from api.js
+
     async function submitProduct() {
       try {
+        const name = document.getElementById('prod-name').value;
+        const category = document.getElementById('prod-category').value;
+        const quantity = parseInt(document.getElementById('prod-quantity').value);
+        const price = parseFloat(document.getElementById('prod-price').value);
+
+        if (!name || !quantity || !price) { showToast("Please fill all fields.", "error"); return; }
+        
         const productData = {
-          name: document.getElementById('prod-name').value,
-          category: document.getElementById('prod-category').value,
-          quantity: parseInt(document.getElementById('prod-quantity').value),
-          price: parseFloat(document.getElementById('prod-price').value),
+          name: name,
+          category: category,
+          quantity: quantity,
+          price: price,
+          imageUrl: '', // Will be generated dynamically by getProductImage if empty
           farmer: { id: user.id }
         };
-        if (!productData.name || !productData.quantity || !productData.price) { showToast("Please fill all fields.", "error"); return; }
+        
         await api.addProduct(productData);
         showToast("Product published successfully!");
         document.getElementById('add-product-modal').classList.add('hidden');
@@ -464,23 +565,38 @@
       } catch (err) { showToast(err.message, "error"); }
     }
 
+    async function deleteProduct(productId) {
+      if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
+      try {
+        await api.deleteProduct(productId, user.id);
+        showToast("Product deleted successfully.");
+        loadFarmerProducts();
+      } catch (e) {
+        showToast(e.message || "Failed to delete product.", "error");
+      }
+    }
+    
     async function loadFarmerProducts() {
       try {
-        const res = await fetch(`${API_BASE_URL}/products/farmer/${user.id}`);
-        const products = await res.json();
+        const products = await api.getProductsByFarmer(user.id);
         document.getElementById('stat-products').textContent = products.length;
         const grid = document.getElementById('products-grid');
         if (products.length === 0) { grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem;">No products listed yet. Add your first product!</p>'; return; }
         grid.innerHTML = products.map(p => `
           <div class="card">
-            <div class="card-img">${getCategoryEmoji(p.category)}</div>
+            <div class="card-img" style="padding:0; overflow:hidden; background:var(--bg-elevated);">
+              <img src="${getProductImage(p)}" data-wiki-query="${p.name}" data-category="${p.category}" onerror="onProductImageError(this)" style="width:100%; height:100%; object-fit:cover;" loading="lazy" alt="${p.name}">
+            </div>
             <div class="card-body">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
                 <span class="tag tag-green">${p.category}</span>
                 <span style="font-size:0.8rem;color:var(--text-muted);">Stock: ${p.quantity}kg</span>
               </div>
               <h3 class="card-title">${p.name}</h3>
-              <div class="card-price">₹${p.price} <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted);">/ kg</span></div>
+              <div class="card-price" style="margin-bottom:0.75rem;">₹${p.price} <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted);">/ kg</span></div>
+              <button class="btn btn-sm" style="width:100%; background:var(--red); color:white; border:none; font-weight:600;" onclick="deleteProduct(${p.id})">
+                🗑️ Delete Product
+              </button>
             </div>
           </div>
         `).join('');
@@ -524,6 +640,13 @@
                   📦 Mark Delivered
                 </button>
               </div>`;
+          } else if (o.status === 'DELIVERED' && (user.role === 'BUYER' || user.role === 'SHOP_OWNER')) {
+            actionHtml = `
+              <div style="margin-top:0.5rem; margin-bottom:0.5rem;">
+                <button class="btn btn-sm btn-secondary" style="width:100%; font-weight:600;" onclick="openReviewModal(${o.product.id}, ${o.id})">
+                  ⭐ Leave a Review
+                </button>
+              </div>`;
           }
 
           const orderJson = JSON.stringify(o).replace(/'/g, "\\'");
@@ -536,7 +659,10 @@
                     <span style="font-size:0.8rem;color:var(--text-muted);">Order #${o.id}</span>
                     <span class="tag ${statusTag}">${o.status === 'SHIPPED' ? 'In Transit' : o.status}</span>
                   </div>
-                  <h3 class="card-title" style="margin-bottom:0.5rem; font-size:1.1rem; font-weight:700;">${getCategoryEmoji(o.product.category)} ${o.product.name}</h3>
+                  <h3 class="card-title" style="margin-bottom:0.5rem; font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
+                    <img src="${getProductImage(o.product)}" data-wiki-query="${o.product.name}" data-category="${o.product.category}" onerror="onProductImageError(this)" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
+                    ${o.product.name}
+                  </h3>
                   <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.5;">
                     <div>🌾 <strong>Farmer:</strong> ${o.product.farmer.name}</div>
                     <div>🏪 <strong>Buyer:</strong> ${o.buyer.name}</div>
@@ -566,6 +692,40 @@
         showToast(`Order #${id} updated to ${status}!`);
         loadOrders();
       } catch (e) { showToast(e.message, "error"); }
+    }
+
+    function openReviewModal(productId, orderId) {
+      document.getElementById('review-product-id').value = productId;
+      document.getElementById('review-order-id').value = orderId;
+      document.getElementById('review-rating').value = '5';
+      document.getElementById('review-comment').value = '';
+      document.getElementById('leave-review-modal').classList.remove('hidden');
+    }
+
+    async function submitProductReview() {
+      try {
+        const productId = document.getElementById('review-product-id').value;
+        const rating = parseInt(document.getElementById('review-rating').value);
+        const comment = document.getElementById('review-comment').value.trim();
+        
+        if (!comment) {
+          showToast("Please provide a brief comment for your review.", "error");
+          return;
+        }
+
+        const reviewData = {
+          product: { id: parseInt(productId) },
+          reviewer: { id: user.id },
+          rating: rating,
+          comment: comment
+        };
+
+        await api.submitReview(reviewData);
+        showToast("Thank you! Your review has been published on the Marketplace.");
+        document.getElementById('leave-review-modal').classList.add('hidden');
+      } catch (e) {
+        showToast(e.message || "Failed to submit review.", "error");
+      }
     }
 
     // ── Transporter UI Functions ─────────────────────────────────────────────────────
@@ -699,14 +859,14 @@
                     <div style="margin-top:0.75rem; border-top: 1px solid var(--border); padding-top:0.75rem;">
                       <div class="form-group" style="margin-bottom:0.5rem;">
                         <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Update Status</label>
-                        <select id="delivery-status-${o.id}" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem;">
+                        <select id="delivery-status-${o.id}" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem;">
                           <option value="SHIPPED" ${o.status==='SHIPPED'?'selected':''}>🚚 In Transit</option>
                           <option value="DELIVERED">📦 Delivered</option>
                         </select>
                       </div>
                       <div class="form-group" style="margin-bottom:0.75rem;">
                         <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">Current Location</label>
-                        <input type="text" id="delivery-loc-${o.id}" placeholder="e.g. Near highway toll, Punjab" value="${o.transporterLocation || ''}" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem;">
+                        <input type="text" id="delivery-loc-${o.id}" placeholder="e.g. Near highway toll, Punjab" value="${o.transporterLocation || ''}" style="width:100%; padding:0.5rem; border-radius:6px; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem;">
                       </div>
                       <button class="btn btn-sm" style="width:100%; font-weight:600; margin-bottom:0.5rem;" onclick="updateDelivery(${o.id})">💾 Save Updates</button>
                     </div>

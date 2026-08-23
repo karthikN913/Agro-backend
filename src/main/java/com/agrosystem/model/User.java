@@ -3,7 +3,11 @@ package com.agrosystem.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_user_firebase_uid", columnList = "firebase_uid"),
+    @Index(name = "idx_user_email", columnList = "email"),
+    @Index(name = "idx_user_phone", columnList = "phone")
+})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

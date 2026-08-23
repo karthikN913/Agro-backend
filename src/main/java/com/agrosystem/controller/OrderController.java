@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +70,7 @@ public class OrderController {
     }
 
     @PostMapping
+    @Transactional
     public ResponseEntity<?> placeOrder(@RequestBody Order order) {
         if (order.getBuyer() == null || order.getProduct() == null) {
             return ResponseEntity.badRequest().body("Buyer and Product are required");

@@ -47,6 +47,21 @@ public class UserController {
                 return ResponseEntity.ok(savedUser);
             }
             
+            // Pre-emptive unique constraint checks to avoid DB duplicate key exceptions
+            if (email != null && !email.trim().isEmpty()) {
+                Optional<User> userWithEmail = userRepository.findByEmail(email);
+                if (userWithEmail.isPresent() && !userWithEmail.get().getFirebaseUid().equals(uid)) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Email address is already in use by another account.");
+                }
+            }
+            
+            if (user.getPhone() != null && !user.getPhone().trim().isEmpty() && !user.getPhone().startsWith("N/A")) {
+                Optional<User> userWithPhone = userRepository.findByPhone(user.getPhone());
+                if (userWithPhone.isPresent() && !userWithPhone.get().getFirebaseUid().equals(uid)) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone number is already in use by another account.");
+                }
+            }
+            
             user.setFirebaseUid(uid);
             user.setEmail(email);
             
@@ -78,6 +93,18 @@ public class UserController {
             // Fallback: If user exists in Firebase but not locally (e.g. split-brain or Google Sign-In), auto-register them
             String fallbackEmail = decodedToken.getEmail() != null ? decodedToken.getEmail() : uid + "@placeholder.com";
             String fallbackName = decodedToken.getName() != null ? decodedToken.getName() : fallbackEmail.split("@")[0];
+            
+            // Check if user already exists locally by email
+            Optional<User> userByEmailOpt = userRepository.findByEmail(fallbackEmail);
+            if (userByEmailOpt.isPresent()) {
+                User existingUser = userByEmailOpt.get();
+                existingUser.setFirebaseUid(uid); // Link the firebaseUid
+                if ("Firebase User".equals(existingUser.getName()) || existingUser.getName() == null || existingUser.getName().isEmpty() || existingUser.getName().startsWith("N/A")) {
+                    existingUser.setName(fallbackName);
+                }
+                User savedUser = userRepository.save(existingUser);
+                return ResponseEntity.ok(savedUser);
+            }
             
             User newUser = new User();
             newUser.setFirebaseUid(uid);

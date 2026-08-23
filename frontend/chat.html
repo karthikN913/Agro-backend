@@ -8,13 +8,32 @@
 </head>
 <body>
   <header>
-    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <a class="logo notranslate" href="dashboard.html">🌾 Agro<span>Linken</span></a>
     <nav>
-      <a href="dashboard.html">📊 Dashboard</a>
-      <a href="marketplace.html">🛍️ Marketplace</a>
-      <a href="community.html">💬 Community</a>
-      <a href="schemes.html">🏛️ Schemes</a>
-      <a href="#" onclick="logout()">🚪 Logout</a>
+      <a href="dashboard.html" data-i18n="nav_dashboard">📊 Dashboard</a>
+      <a href="marketplace.html" data-i18n="nav_marketplace">🛍️ Marketplace</a>
+      <a href="community.html" data-i18n="nav_community">💬 Community</a>
+      <a href="schemes.html" data-i18n="nav_schemes">🏛️ Schemes</a>
+      <a href="#" onclick="logout()" data-i18n="nav_logout">🚪 Logout</a>
+      <select class="lang-selector notranslate" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+        <option value="bn">বাংলা (Bengali)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="mr">मराठी (Marathi)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="ur">اردو (Urdu)</option>
+        <option value="gu">ગુજરાતી (Gujarati)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="as">অসমীয়া (Assamese)</option>
+        <option value="mai">मैथिली (Maithili)</option>
+        <option value="gom">कोंकणी (Konkani)</option>
+        <option value="sa">संस्कृतम् (Sanskrit)</option>
+      </select>
+      <div id="google_translate_element" style="display:none;"></div>
     </nav>
   </header>
 
@@ -22,9 +41,8 @@
     <!-- Chat Sidebar -->
     <div class="chat-sidebar">
       <div class="chat-sidebar-header">💬 Messages</div>
-      <div style="padding:0.75rem;border-bottom:1px solid var(--border);">
-        <input type="search" id="user-search" placeholder="🔍  Search users..." oninput="searchUsers()"
-          style="width:100%;padding:0.6rem 1rem;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:Inter,sans-serif;outline:none;">
+      <div class="chat-search-container">
+        <input type="search" id="user-search" class="chat-search-input" placeholder="🔍 Search users..." oninput="searchUsers()">
       </div>
       <div class="chat-list" id="chat-list">
         <div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.9rem;">Loading users...</div>
@@ -34,10 +52,10 @@
     <!-- Chat Window -->
     <div class="chat-window" id="chat-window">
       <!-- Empty State -->
-      <div id="chat-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);">
-        <div style="font-size:4rem;margin-bottom:1rem;">💬</div>
-        <h3 style="font-size:1.1rem;margin-bottom:0.5rem;color:var(--text-secondary);">Select a conversation</h3>
-        <p style="font-size:0.9rem;">Choose a farmer or buyer from the left to start chatting</p>
+      <div id="chat-empty-state" class="chat-empty-state">
+        <div class="chat-empty-icon">💬</div>
+        <h3 class="chat-empty-title">Select a conversation</h3>
+        <p class="chat-empty-text">Choose a farmer or buyer from the left to start chatting</p>
       </div>
 
       <!-- Active Chat (hidden by default) -->
@@ -60,6 +78,12 @@
   </div>
 
   <script src="scripts/api.js"></script>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'hi,bn,te,mr,ta,ur,gu,kn,ml,or,pa,as,mai,gom,sa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <!-- SockJS + STOMP for WebSocket -->
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
@@ -89,9 +113,7 @@
 
     async function loadUsers() {
       try {
-        const res = await fetch(`${API_BASE_URL}/users`);
-        if (!res.ok) throw new Error('Could not load users');
-        allUsers = (await res.json()).filter(u => u.id !== user.id);
+        allUsers = (await api.getAllUsers()).filter(u => u.id !== user.id);
         renderUserList(allUsers);
       } catch(e) {
         document.getElementById('chat-list').innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem;">Connect with farmers and buyers by visiting the marketplace.</div>';
@@ -131,8 +153,7 @@
 
       // Load chat history
       try {
-        const res = await fetch(`${API_BASE_URL}/messages/${user.id}/${peer.id}`);
-        const messages = await res.json();
+        const messages = await api.getMessages(user.id, peer.id);
         const msgContainer = document.getElementById('chat-messages');
         msgContainer.innerHTML = '';
         messages.forEach(m => appendMessage(m, false));
@@ -145,7 +166,7 @@
       const container = document.getElementById('chat-messages');
       const div = document.createElement('div');
       div.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:${isSent ? 'flex-end' : 'flex-start'};">
+        <div class="message-wrapper ${isSent ? 'sent' : 'received'}">
           <div class="message-bubble ${isSent ? 'sent' : 'received'}">${escapeHtml(msg.content)}</div>
           <div class="message-time">${formatTime(msg.timestamp)}</div>
         </div>`;

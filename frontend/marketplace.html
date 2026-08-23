@@ -3,18 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Marketplace – Agro Linken</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
   <header>
-    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <a class="logo notranslate" href="dashboard.html">🌾 Agro<span>Linken</span></a>
     <nav>
-      <a href="dashboard.html">📊 Dashboard</a>
-      <a href="marketplace.html" class="active">🛍️ Marketplace</a>
-      <a href="community.html">💬 Community</a>
-      <a href="schemes.html">🏛️ Schemes</a>
-      <a href="#" onclick="logout()">🚪 Logout</a>
+      <a href="dashboard.html" data-i18n="nav_dashboard">📊 Dashboard</a>
+      <a href="marketplace.html" class="active" data-i18n="nav_marketplace">🛍️ Marketplace</a>
+      <a href="community.html" data-i18n="nav_community">💬 Community</a>
+      <a href="schemes.html" data-i18n="nav_schemes">🏛️ Schemes</a>
+      <a href="#" onclick="logout()" data-i18n="nav_logout">🚪 Logout</a>
+      <select class="lang-selector notranslate" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+        <option value="bn">বাংলা (Bengali)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="mr">मराठी (Marathi)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="ur">اردو (Urdu)</option>
+        <option value="gu">ગુજરાતી (Gujarati)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="as">অসমীয়া (Assamese)</option>
+        <option value="mai">मैथिली (Maithili)</option>
+        <option value="gom">कोंकणी (Konkani)</option>
+        <option value="sa">संस्कृतम् (Sanskrit)</option>
+      </select>
+      <div id="google_translate_element" style="display:none;"></div>
     </nav>
   </header>
 
@@ -22,11 +44,11 @@
     <aside class="sidebar">
       <div class="sidebar-section">
         <div class="sidebar-label">Navigation</div>
-        <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
-        <a href="marketplace.html" class="sidebar-link active"><span class="icon">🛍️</span> Marketplace</a>
-        <a href="chat.html" class="sidebar-link"><span class="icon">💬</span> Messages</a>
-        <a href="community.html" class="sidebar-link"><span class="icon">🌐</span> Community</a>
-        <a href="schemes.html" class="sidebar-link"><span class="icon">🏛️</span> Gov. Schemes</a>
+        <a href="dashboard.html" class="sidebar-link" data-i18n="nav_dashboard"><span class="icon">📊</span> Dashboard</a>
+        <a href="marketplace.html" class="sidebar-link active" data-i18n="nav_marketplace"><span class="icon">🛍️</span> Marketplace</a>
+        <a href="chat.html" class="sidebar-link" data-i18n="nav_messages"><span class="icon">💬</span> Messages</a>
+        <a href="community.html" class="sidebar-link" data-i18n="nav_community"><span class="icon">🌐</span> Community</a>
+        <a href="schemes.html" class="sidebar-link" data-i18n="nav_schemes"><span class="icon">🏛️</span> Gov. Schemes</a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Filter by Category</div>
@@ -48,29 +70,40 @@
         </div>
       </div>
 
+      <!-- Hero Image Banner — Indian Sabzi Mandi -->
+      <div class="page-hero-banner">
+        <img
+          src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=1400&q=85"
+          alt="Fresh Farm Produce Market"
+          loading="lazy"
+          onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1400&q=80'">
+        <div class="page-hero-banner-overlay">
+          <div class="page-hero-badge">🛒 Farmers Market</div>
+          <div class="page-hero-banner-title">India's Digital Agriculture Market</div>
+          <div class="page-hero-banner-sub">Buy direct from farmers · No middlemen · Fair prices across 28 states</div>
+        </div>
+      </div>
+
       <!-- SaaS Multi-Filter Control Panel -->
-      <div class="card" style="padding:1.25rem; margin-bottom:1.5rem; border: 1px solid var(--border); background:rgba(22, 30, 22, 0.65); backdrop-filter:blur(10px);">
-        <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap:1rem; align-items:flex-end;" class="responsive-split">
+      <div class="card card-body" style="margin-bottom:1.5rem;">
+        <div class="marketplace-filters responsive-split">
           <div class="form-group" style="margin:0;">
-            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.35rem; display:block;">🔍 Search Crop Name</label>
-            <input type="text" id="filter-query" placeholder="e.g. Tomatoes, Basmati" oninput="applyAdvancedFilters()"
-              style="width:100%; padding:0.65rem 1rem; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem; outline:none;">
+            <label>🔍 Search Crop Name</label>
+            <input type="text" id="filter-query" placeholder="e.g. Tomatoes, Basmati" oninput="debouncedFilter()">
           </div>
           
           <div class="form-group" style="margin:0;">
-            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.35rem; display:block;">📍 Location / State</label>
-            <input type="text" id="filter-location" placeholder="e.g. Punjab, Bihar" oninput="applyAdvancedFilters()"
-              style="width:100%; padding:0.65rem 1rem; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem; outline:none;">
+            <label>📍 Location / State</label>
+            <input type="text" id="filter-location" placeholder="e.g. Punjab, Bihar" oninput="debouncedFilter()">
           </div>
-
+ 
           <div class="form-group" style="margin:0;">
-            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.35rem; display:block;">💵 Max Price (₹/kg)</label>
-            <input type="number" id="filter-max-price" placeholder="e.g. 100" oninput="applyAdvancedFilters()"
-              style="width:100%; padding:0.65rem 1rem; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:Inter,sans-serif; font-size:0.85rem; outline:none;">
+            <label>💵 Max Price (₹/kg)</label>
+            <input type="number" id="filter-max-price" placeholder="e.g. 100" oninput="debouncedFilter()">
           </div>
-
+ 
           <div class="form-group" style="margin:0;">
-            <button class="btn btn-secondary btn-sm" style="width:100%; font-size:0.8rem; padding:0.65rem; margin:0;" onclick="clearFilters()">
+            <button class="btn btn-secondary btn-sm" style="margin:0;" onclick="clearFilters()">
               🧹 Clear Filters
             </button>
           </div>
@@ -169,25 +202,39 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script src="scripts/api.js"></script>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'hi,bn,te,mr,ta,ur,gu,kn,ml,or,pa,as,mai,gom,sa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script>
     const user = requireAuth();
+    // Ensure user.id is always a Number to avoid type mismatch with API ids
+    user.id = Number(user.id);
     let allProducts = [];
+    let reviewSummaries = {};
     let currentProduct = null;
 
     loadMarketplace();
 
     function showToast(msg, type = 'success') {
       const c = document.getElementById('toast-container');
-      const t = document.createElement('div');
-      t.className = `toast ${type}`;
-      t.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
-      c.appendChild(t);
-      setTimeout(() => t.remove(), 4000);
+      const c_toast = document.createElement('div');
+      c_toast.className = `toast ${type}`;
+      c_toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+      c.appendChild(c_toast);
+      setTimeout(() => c_toast.remove(), 4000);
     }
 
     async function loadMarketplace() {
       try {
-        allProducts = await api.getAllProducts();
+        const [products, summaries] = await Promise.all([
+          api.getAllProducts(),
+          api.getBatchReviewSummaries()
+        ]);
+        allProducts = products;
+        reviewSummaries = summaries;
         renderProducts(allProducts);
       } catch(e) { console.error(e); }
     }
@@ -197,15 +244,25 @@
       return map[cat] || '📦';
     }
 
+    // Using global getProductImage from api.js
+
     function renderProducts(products) {
       const grid = document.getElementById('market-grid');
       if (products.length === 0) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);">No products found.</div>';
         return;
       }
-      grid.innerHTML = products.map(p => `
+      grid.innerHTML = products.map(p => {
+        const summary = reviewSummaries[p.id];
+        let ratingHtml = '⭐ No reviews yet';
+        if (summary && summary.count > 0) {
+          ratingHtml = `⭐ ${summary.average.toFixed(1)} (${summary.count} review${summary.count > 1 ? 's' : ''})`;
+        }
+        return `
         <div class="card">
-          <div class="card-img">${getCategoryEmoji(p.category)}</div>
+          <div class="card-img" style="padding:0; overflow:hidden; background:var(--bg-elevated);">
+            <img src="${getProductImage(p)}" data-wiki-query="${p.name}" data-category="${p.category}" onerror="onProductImageError(this)" style="width:100%; height:100%; object-fit:cover;" loading="lazy" alt="${p.name}">
+          </div>
           <div class="card-body">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
               <span class="tag tag-green">${p.category}</span>
@@ -215,7 +272,7 @@
             
             <!-- Dynamic Rating Summary -->
             <div class="product-rating" id="rating-summary-${p.id}" style="font-size:0.85rem;color:var(--amber);margin-bottom:0.6rem;cursor:pointer;font-weight:600;" onclick='openViewReviewsModal(${p.id}, "${p.name.replace(/"/g, "&quot;")}")'>
-              ⭐ Loading rating...
+              ${ratingHtml}
             </div>
 
             <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.5rem;">
@@ -225,40 +282,30 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
               <span style="font-size:0.85rem;color:var(--text-muted);">Stock: ${p.quantity} kg</span>
             </div>
-            ${(user.role === 'BUYER' || user.role === 'SHOP_OWNER') ? `
-              <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
-                <button class="btn btn-secondary btn-sm" style="flex:1;margin-top:0;" onclick='openReviewModal(${p.id}, "${p.name.replace(/"/g, "&quot;")}")'>
-                  ⭐ Review
-                </button>
-                <button class="btn btn-sm" style="flex:1.5;margin-top:0;" onclick='openPurchaseModal(${JSON.stringify(p).replace(/'/g,"\\'")})'
-                  ${p.quantity === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
-                  ${p.quantity === 0 ? '❌ Out of Stock' : '🛒 Buy Now'}
-                </button>
-              </div>` : (user.role === 'FARMER' ? '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding-top:0.5rem;border-top:1px solid var(--border);">Your product</p>' : '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding-top:0.5rem;border-top:1px solid var(--border);">Logistics Only (Cannot Purchase)</p>')}
+            ${(() => {
+              const isOwner = (Number(p.farmer.id) === Number(user.id));
+              const isBuyer = (user.role === 'BUYER' || user.role === 'SHOP_OWNER');
+              if (isBuyer) return `
+                <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+                  <button class="btn btn-secondary btn-sm" style="flex:1;margin-top:0;" onclick='openReviewModal(${p.id}, "${p.name.replace(/"/g, '&quot;')}")'>
+                    ⭐ Review
+                  </button>
+                  <button class="btn btn-sm" style="flex:1.5;margin-top:0;" onclick='openPurchaseModal(${JSON.stringify(p).replace(/'/g,"\\'")})'
+                    ${p.quantity === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                    ${p.quantity === 0 ? '❌ Out of Stock' : '🛒 Buy Now'}
+                  </button>
+                </div>`;
+              if (isOwner) return `
+                <div style="margin-top:0.75rem;">
+                  <button onclick="deleteProduct(${p.id})" style="width:100%;padding:0.6rem;background:#ef4444;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;">
+                    🗑️ Delete Product
+                  </button>
+                </div>`;
+              return '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding-top:0.5rem;border-top:1px solid var(--border);">Logistics Only (Cannot Purchase)</p>';
+            })()}
           </div>
         </div>
-      `).join('');
-
-      // Fetch rating summaries on the fly
-      loadRatingSummaries(products);
-    }
-
-    function loadRatingSummaries(products) {
-      products.forEach(async p => {
-        try {
-          const summary = await api.getReviewSummary(p.id);
-          const el = document.getElementById(`rating-summary-${p.id}`);
-          if (el) {
-            if (summary.count > 0) {
-              el.innerHTML = `⭐ ${summary.average.toFixed(1)} (${summary.count} review${summary.count > 1 ? 's' : ''})`;
-            } else {
-              el.innerHTML = `⭐ No reviews yet`;
-            }
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      });
+      `; }).join('');
     }
 
     let selectedCategory = 'all';
@@ -275,19 +322,46 @@
       applyAdvancedFilters();
     }
 
-    async function applyAdvancedFilters() {
-      try {
-        const params = {
-          query: document.getElementById('filter-query').value.trim(),
-          location: document.getElementById('filter-location').value.trim(),
-          maxPrice: document.getElementById('filter-max-price').value.trim(),
-          category: selectedCategory
-        };
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
 
-        const filtered = await api.searchProducts(params);
+    const debouncedFilter = debounce(applyAdvancedFilters, 250);
+
+    function applyAdvancedFilters() {
+      try {
+        const query = document.getElementById('filter-query').value.trim().toLowerCase();
+        const location = document.getElementById('filter-location').value.trim().toLowerCase();
+        const maxPriceVal = document.getElementById('filter-max-price').value.trim();
+        const maxPrice = maxPriceVal ? parseFloat(maxPriceVal) : null;
+        const category = selectedCategory;
+
+        const filtered = allProducts.filter(p => {
+          if (query && !p.name.toLowerCase().includes(query)) {
+            return false;
+          }
+          if (category && category !== 'all' && p.category.toLowerCase() !== category.toLowerCase()) {
+            return false;
+          }
+          if (maxPrice !== null && !isNaN(maxPrice) && p.price > maxPrice) {
+            return false;
+          }
+          if (location) {
+            const loc = p.farmer?.location || '';
+            if (!loc.toLowerCase().includes(location)) {
+              return false;
+            }
+          }
+          return true;
+        });
+
         renderProducts(filtered);
       } catch (e) {
-        console.error("Error searching products: ", e);
+        console.error("Error filtering products: ", e);
       }
     }
 
@@ -305,6 +379,17 @@
       });
 
       loadMarketplace();
+    }
+
+    async function deleteProduct(productId) {
+      if (!confirm("Are you sure you want to completely delete this product from the database? This action cannot be undone.")) return;
+      try {
+        await api.deleteProduct(productId, user.id);
+        showToast("Product permanently deleted from database.");
+        loadMarketplace();
+      } catch (e) {
+        showToast(e.message || "Failed to delete product.", "error");
+      }
     }
 
     function openPurchaseModal(product) {

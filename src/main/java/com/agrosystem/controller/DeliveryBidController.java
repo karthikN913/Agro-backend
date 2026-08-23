@@ -9,6 +9,7 @@ import com.agrosystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -86,6 +87,7 @@ public class DeliveryBidController {
     }
 
     @PostMapping("/{bidId}/accept")
+    @Transactional
     public ResponseEntity<?> acceptBid(@PathVariable Long bidId) {
         Optional<DeliveryBid> bidOpt = deliveryBidRepository.findById(bidId);
         if (bidOpt.isEmpty()) {
@@ -109,13 +111,17 @@ public class DeliveryBidController {
         order.setStatus(Order.Status.SHIPPED);
         orderRepository.save(order);
 
-        // Reject all other bids for this order
+        // Reject all other bids for this order using batch save
         List<DeliveryBid> otherBids = deliveryBidRepository.findByOrderId(order.getId());
+        List<DeliveryBid> toUpdate = new java.util.ArrayList<>();
         for (DeliveryBid b : otherBids) {
             if (!b.getId().equals(bidId)) {
                 b.setStatus(DeliveryBid.Status.REJECTED);
-                deliveryBidRepository.save(b);
+                toUpdate.add(b);
             }
+        }
+        if (!toUpdate.isEmpty()) {
+            deliveryBidRepository.saveAll(toUpdate);
         }
 
         return ResponseEntity.ok(order);

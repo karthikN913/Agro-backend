@@ -3,7 +3,10 @@ package com.agrosystem.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = {
+    @Index(name = "idx_product_farmer",   columnList = "farmer_id"),
+    @Index(name = "idx_product_category", columnList = "category")
+})
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -8,13 +8,32 @@
 </head>
 <body>
   <header>
-    <a class="logo" href="dashboard.html">🌾 Agro<span>Linken</span></a>
+    <a class="logo notranslate" href="dashboard.html">🌾 Agro<span>Linken</span></a>
     <nav>
-      <a href="dashboard.html">📊 Dashboard</a>
-      <a href="marketplace.html">🛍️ Marketplace</a>
-      <a href="community.html" class="active">💬 Community</a>
-      <a href="schemes.html">🏛️ Schemes</a>
-      <a href="#" onclick="logout()">🚪 Logout</a>
+      <a href="dashboard.html" data-i18n="nav_dashboard">📊 Dashboard</a>
+      <a href="marketplace.html" data-i18n="nav_marketplace">🛍️ Marketplace</a>
+      <a href="community.html" class="active" data-i18n="nav_community">💬 Community</a>
+      <a href="schemes.html" data-i18n="nav_schemes">🏛️ Schemes</a>
+      <a href="#" onclick="logout()" data-i18n="nav_logout">🚪 Logout</a>
+      <select class="lang-selector notranslate" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+        <option value="bn">বাংলা (Bengali)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="mr">मराठी (Marathi)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="ur">اردو (Urdu)</option>
+        <option value="gu">ગુજરાતી (Gujarati)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="as">অসমীয়া (Assamese)</option>
+        <option value="mai">मैथिली (Maithili)</option>
+        <option value="gom">कोंकणी (Konkani)</option>
+        <option value="sa">संस्कृतम् (Sanskrit)</option>
+      </select>
+      <div id="google_translate_element" style="display:none;"></div>
     </nav>
   </header>
 
@@ -22,11 +41,11 @@
     <aside class="sidebar">
       <div class="sidebar-section">
         <div class="sidebar-label">Navigation</div>
-        <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
-        <a href="marketplace.html" class="sidebar-link"><span class="icon">🛍️</span> Marketplace</a>
-        <a href="chat.html" class="sidebar-link"><span class="icon">💬</span> Messages</a>
-        <a href="community.html" class="sidebar-link active"><span class="icon">🌐</span> Community</a>
-        <a href="schemes.html" class="sidebar-link"><span class="icon">🏛️</span> Gov. Schemes</a>
+        <a href="dashboard.html" class="sidebar-link" data-i18n="nav_dashboard"><span class="icon">📊</span> Dashboard</a>
+        <a href="marketplace.html" class="sidebar-link" data-i18n="nav_marketplace"><span class="icon">🛍️</span> Marketplace</a>
+        <a href="chat.html" class="sidebar-link" data-i18n="nav_messages"><span class="icon">💬</span> Messages</a>
+        <a href="community.html" class="sidebar-link active" data-i18n="nav_community"><span class="icon">🌐</span> Community</a>
+        <a href="schemes.html" class="sidebar-link" data-i18n="nav_schemes"><span class="icon">🏛️</span> Gov. Schemes</a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Community</div>
@@ -43,6 +62,45 @@
         <button class="btn btn-sm" style="width:auto;" onclick="document.getElementById('new-post-modal').classList.remove('hidden')">
           ✍️ New Post
         </button>
+      </div>
+
+      <!-- Hero Image Banner — Indian Farmers Community -->
+      <div class="page-hero-banner">
+        <img
+          src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=1400&q=85"
+          alt="Farmers Working Together in Field"
+          loading="lazy"
+          onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=80'">
+        <div class="page-hero-banner-overlay">
+          <div class="page-hero-badge">🤝 Farmer Community</div>
+          <div class="page-hero-banner-title">India's Agricultural Community</div>
+          <div class="page-hero-banner-sub">Share tips · Ask questions · Grow together across India's farming heartland</div>
+        </div>
+      </div>
+
+      <!-- Community Stat Tiles -->
+      <div class="community-stats-row">
+        <div class="community-stat-tile">
+          <div class="community-stat-tile-icon">🌾</div>
+          <div>
+            <div class="community-stat-tile-label">Active Farmers</div>
+            <div class="community-stat-tile-value">12,000+</div>
+          </div>
+        </div>
+        <div class="community-stat-tile">
+          <div class="community-stat-tile-icon">💬</div>
+          <div>
+            <div class="community-stat-tile-label">Posts Shared</div>
+            <div class="community-stat-tile-value">4,800+</div>
+          </div>
+        </div>
+        <div class="community-stat-tile">
+          <div class="community-stat-tile-icon">🗺️</div>
+          <div>
+            <div class="community-stat-tile-label">States Connected</div>
+            <div class="community-stat-tile-value">28</div>
+          </div>
+        </div>
       </div>
 
       <div id="forum-feed">
@@ -77,8 +135,7 @@
       </div>
       <div class="form-group">
         <label>Content</label>
-        <textarea id="post-content" rows="5" placeholder="Share your tips, ask questions, or discuss agricultural topics..."
-          style="width:100%;padding:0.75rem 1rem;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:Inter,sans-serif;resize:vertical;outline:none;"></textarea>
+        <textarea id="post-content" rows="5" placeholder="Share your tips, ask questions, or discuss agricultural topics..."></textarea>
       </div>
       <button class="btn" onclick="submitPost()">🚀 Publish Post</button>
       <button class="btn btn-secondary" onclick="document.getElementById('new-post-modal').classList.add('hidden')">Cancel</button>
@@ -88,6 +145,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script src="scripts/api.js"></script>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'hi,bn,te,mr,ta,ur,gu,kn,ml,or,pa,as,mai,gom,sa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script>
     const user = requireAuth();
 
