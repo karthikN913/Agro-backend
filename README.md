@@ -1,5 +1,8 @@
 # Agro Linken
 
+**Live Application:** [https://agro-linken.web.app](https://agro-linken.web.app)  
+**Backend API:** [https://agro-backend-hscn.onrender.com/api](https://agro-backend-hscn.onrender.com/api)
+
 Agro Linken is a digital agricultural marketplace and supply chain web application designed to connect farmers directly with produce buyers, shop owners, and transport providers. 
 
 The application facilitates direct listing and ordering of agricultural produce, competitive delivery bidding for transporters, real-time messaging, a digital credit ledger for rural credit management, and informational access to government agricultural schemes.
