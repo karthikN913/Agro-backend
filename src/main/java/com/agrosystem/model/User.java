@@ -18,6 +18,7 @@ public class User {
     @Column(unique = true)
     private String email;
     @Column(unique = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String firebaseUid;
     @Enumerated(EnumType.STRING)
     private Role role;

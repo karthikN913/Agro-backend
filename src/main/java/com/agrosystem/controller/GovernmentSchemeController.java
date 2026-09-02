@@ -18,7 +18,7 @@ public class GovernmentSchemeController {
     /** GET /api/schemes — returns all active schemes */
     @GetMapping
     public List<GovernmentScheme> getAllSchemes() {
-        return governmentSchemeRepository.findAll();
+        return governmentSchemeRepository.findByIsActiveTrue();
     }
 
     /** POST /api/schemes — admin endpoint to add a new scheme */

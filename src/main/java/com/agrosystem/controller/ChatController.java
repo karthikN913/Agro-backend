@@ -38,7 +38,6 @@ public class ChatController {
     @GetMapping("/api/messages/{userId1}/{userId2}")
     @ResponseBody
     public List<Message> getChatHistory(@PathVariable Long userId1, @PathVariable Long userId2) {
-        return messageRepository.findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByTimestampAsc(
-                userId1, userId2, userId2, userId1);
+        return messageRepository.findChatHistory(userId1, userId2);
     }
 }
